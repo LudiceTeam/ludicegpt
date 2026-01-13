@@ -20,13 +20,13 @@ source chatgpt/.venv/bin/activate
 
 ``` bash
 cd frontend
-pip3 install requirements.txt
+pip3 install -r requirements.txt
 python3 app.py
 ```
 
 ``` bash
 cd backend
-pip3 install requirements.txt
+pip3 install -r requirements.txt
 python3 api.py
 ```
 
