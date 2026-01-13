@@ -4,11 +4,12 @@ import aiohttp
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv, find_dotenv
 from datetime import datetime
+from aiogram.client.session.aiohttp import AiohttpSession
 
 load_dotenv(find_dotenv())
 TOKEN = os.getenv("TOKEN")
 
-from routers.private_user import start_router, game_router, bot_session
+from routers.private_user import start_router, profile_router, chat_router
 import routers.private_user as private_user
 
 LOG_FILE = "bot_start_log.txt"
@@ -30,8 +31,8 @@ async def main():
 
     try:
         # Initialize bot with the custom session
+        bot_session = AiohttpSession()
         bot = Bot(TOKEN, session=bot_session)
-        dp = Dispatcher()
 
         dp.include_router(start_router)
         dp.include_router(profile_router)
