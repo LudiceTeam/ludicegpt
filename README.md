@@ -2,7 +2,7 @@
   <img src="logo.png" height="200">
 </p>
 <h1 align="center">
-  BBG-ChatGPT
+  BBG-ChatGPT.
 </h1>
 
 ## Installation for developers
