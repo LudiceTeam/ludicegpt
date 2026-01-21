@@ -182,10 +182,10 @@ async def get_me(username:str) -> dict:
             if data is not None:
                 user_data = data
                 return {
-                    "username":user_data[0],
-                    "free requests":user_data[2],
-                    "subscribed":user_data[3],
-                    "date of subscribtion to end":user_data[4]
+                    "Username":user_data[0],
+                    "Free requests":user_data[2],
+                    "Subscribed":user_data[3],
+                    "Date of subscribtion to end":user_data[4]
                 }
         except Exception as e:
             raise  Exception(f"Error : {e}") 
