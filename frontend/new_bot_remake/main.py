@@ -5,11 +5,8 @@ from aiogram import Bot,Dispatcher
 import asyncio
 from handlers import router
 import sys
+from config import PROJECT_ROOT
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.dirname(current_dir) 
-
-sys.path.insert(0, project_root)
 
 load_dotenv()
 

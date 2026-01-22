@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 import os
 from dotenv import load_dotenv
-from database.chats_database.chats_models import metadata_obj,chats_table
+from backend.database.chats_database.chats_models import metadata_obj,chats_table
 
 
 load_dotenv()

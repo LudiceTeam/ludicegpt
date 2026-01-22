@@ -1,5 +1,7 @@
 from aiogram.types import ReplyKeyboardMarkup,KeyboardButton,InlineKeyboardButton,InlineKeyboardMarkup
-
+import os
+import sys
+from config import PROJECT_ROOT
 
 main_keyboard = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text = "Chat"),KeyboardButton(text = "Profile")]
