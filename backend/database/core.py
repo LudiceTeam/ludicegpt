@@ -210,6 +210,8 @@ async def unsub_all_users_whos_sub_is_ending_today():
         except Exception as e:
             raise  Exception(f"Error : {e}") 
 
+async def get_sub_date_end(username:str) -> str:
+    pass
 
 def cleanup():
     """Очистка при завершении"""
