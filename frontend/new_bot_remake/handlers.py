@@ -16,6 +16,7 @@ import fitz
 from pdf2image import convert_from_path
 import zipfile
 from docx import Document
+from doc_handler import extract_text_from_docx_with_images
 
 
 
@@ -182,21 +183,6 @@ async def read_pdf(path:str) -> str:
     except Exception as e:
         raise Exception(f"Error : {e}")            
     
-async def read_doc(path:str) -> str:
-    try:
-        doc = Document(path)
-        text_pr = []
-        for pr in doc.paragraphs:
-            if pr.text.strip():
-                text_pr.append(pr.text)
-        for table in doc.tables:
-            for row in table.rows:
-                for cell in row.cells:
-                    if cell.text.strip():
-                        text_pr.append(cell.text)  
-        return "\n\n".join(text_pr)                      
-    except Exception as e:
-        raise Exception(f"Error : {e}")
 
 
 @router.message(F.document)
@@ -214,7 +200,7 @@ async def answer_with_document(message:Message):
             elif file_path.endswith('.pdf'):
                 text = await read_pdf(file_path)
             elif file_path.endswith(('.docx','.doc')):
-                text = await read_doc(file_path)
+                text = await extract_text_from_docx_with_images(file_path)
             elif file_path.endswith(('.txt','.text')):
                 with open(file_path,"r",encoding='utf-8') as file:
                     text = file.read()
