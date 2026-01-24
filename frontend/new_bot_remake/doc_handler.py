@@ -17,3 +17,5 @@ async def extract(path:str) -> str:
         return "\n\n".join(text_pr)                      
     except Exception as e:
         raise Exception(f"Error : {e}")
+
+    

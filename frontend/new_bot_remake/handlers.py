@@ -214,7 +214,7 @@ async def answer_with_document(message:Message):
             elif file_path.endswith('.pdf'):
                 text = await read_pdf(file_path)
             elif file_path.endswith(('.docx','.doc')):
-                pass
+                text = await read_doc(file_path)
             elif file_path.endswith(('.txt','.text')):
                 with open(file_path,"r",encoding='utf-8') as file:
                     text = file.read()
