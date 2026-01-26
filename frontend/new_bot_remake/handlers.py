@@ -66,7 +66,7 @@ async def profile_handler(message:Message):
     user_id = message.from_user.id
     res_unsub:bool = await unsub_full_func(str(user_id))
     if res_unsub:
-        await message.asnwer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Благодарим за поддержку")
+        await message.asnwer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Вы можете пользоваться ботом в пределе бесплатного тарифа.Благодарим за поддержку")
     user_data = await get_me(str(user_id))
     user_data[str(user_id)] = user_name
     user_subbed:bool = await  is_user_subbed(str(user_id))
@@ -125,7 +125,7 @@ async def chat_handler(message:Message):
     user_id = message.from_user.id
     res_unsub:bool = await unsub_full_func(str(user_id))
     if res_unsub:
-        await message.asnwer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Благодарим за поддержку")
+        await message.asnwer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Вы можете пользоваться ботом в пределе бесплатного тарифа.Благодарим за поддержку")
     global user_chat_flag
     user_chat_flag = True  
     await message.answer("Привет я твой помошник ChatGPT от LudiceTeam в Telegram") # написать норм тектс для бота  типо просто первое сообщение в чате
@@ -136,7 +136,7 @@ async def answer_messages(message:Message):
         user_id = message.from_user.id
         res_unsub:bool = await unsub_full_func(str(user_id))
         if res_unsub:
-            await message.asnwer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Благодарим за поддержку")
+            await message.asnwer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Вы можете пользоваться ботом в пределе бесплатного тарифа.Благодарим за поддержку")
         await message.answer("Думаю...")
         user_messages = await get_all_user_messsages(str(user_id))
         is_user_subbed_ = await is_user_subbed(str(user_id))
@@ -161,7 +161,7 @@ async def answer_with_photo(message:Message):
         user_id = message.from_user.id
         res_unsub:bool = await unsub_full_func(str(user_id))
         if res_unsub:
-            await message.asnwer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Благодарим за поддержку")
+            await message.asnwer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Вы можете пользоваться ботом в пределе бесплатного тарифа.Благодарим за поддержку")
         await message.answer("Думаю...")
         photo = message.photo[-1]
         user_messages = await get_all_user_messsages(str(user_id))
@@ -226,7 +226,7 @@ async def answer_with_document(message:Message):
         user_id = message.from_user.id
         res_unsub:bool = await unsub_full_func(str(user_id))
         if res_unsub:
-            await message.asnwer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Благодарим за поддержку")
+            await message.asnwer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Вы можете пользоваться ботом в пределе бесплатного тарифа.Благодарим за поддержку")
         await message.answer("Думаю...")
         document = message.document
         filename = document.file_name.lower()
