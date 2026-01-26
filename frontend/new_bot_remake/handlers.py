@@ -19,7 +19,9 @@ from docx import Document
 from doc_handler import extract_text_from_docx_with_images
 from backend.database.chats_database.chats_core import write_message,get_all_user_messsages
 from backend.api import ask_chat_gpt
-from backend.database.core import create_deafault_user_data,remove_free_zapros,check_free_zapros_amount,get_amount_of_zaproses,subscribe,set_sub_bac_to_false,get_me,unsub_all_users_whos_sub_is_ending_today,is_user_subbed,buy_zaproses
+from backend.database.core import create_deafault_user_data,remove_free_zapros,check_free_zapros_amount,get_amount_of_zaproses,subscribe,set_sub_bac_to_false,get_me,unsub_all_users_whos_sub_is_ending_today,is_user_subbed,buy_zaproses,get_sub_date_end
+from datetime import timedelta,datetime
+from typing import List
 
 router = Router()
 
@@ -33,6 +35,29 @@ async def start_messsage(message:Message):
     user_id = message.from_user.id
     await create_deafault_user_data(str(user_id))
     await message.answer("Welcome",reply_markup=kb.main_keyboard)# вставить сюда норм текст
+    
+async def unsub_full_func(username:str) -> bool:
+    if await is_user_subbed(username):
+        user_end_date:str = await get_sub_date_end(username)
+        date_now = datetime.now().date()
+        
+        async def transform_date_to_int(date:str) -> int:
+            dt:str = ""
+            for tm in str(date).split('-'):
+                dt += tm
+            return int(dt)
+        
+        date_int_end:int = await transform_date_to_int(str(user_end_date))
+        date_int_now:int = await transform_date_to_int(str(date_now)) 
+        
+        if date_int_now >= user_end_date:
+            await set_sub_bac_to_false(username)  
+            return True
+        return False 
+    return False
+            
+        
+    
 
 @router.message(F.text == "Profile")
 async def profile_handler(message:Message):
