@@ -5,9 +5,10 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 import os
 from dotenv import load_dotenv
-from backend.database.state_database.state_models import metadata_obj,state_table
+#from backend.database.state_database.state_models import metadata_obj,state_table
 #from chats_models import metadata_obj,chats_table
 import asyncio
+from state_models import metadata_obj,state_table
 
 
 load_dotenv()
@@ -51,7 +52,7 @@ async def is_user_exists(username:str) -> bool:
             if data is not None:
                 return True
             return False
-        except exc.SQLAlchemyErro:
+        except exc.SQLAlchemyError:
             raise exc.SQLAlchemyError("Error while executing")        
 
 async def create_user_state(username:str):
@@ -99,3 +100,4 @@ async def delete_user_data(username:str):
                 await conn.execute(stmt)
             except exc.SQLAlchemyError:
                 raise exc.SQLAlchemyError("Error while executing")        
+ 

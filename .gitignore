@@ -9,3 +9,4 @@ backend/database/chats_database/.env
 backend/database/chats_database/.env
 backend/database/.env
 backend/database/.env
+backend/database/state_database/.env
