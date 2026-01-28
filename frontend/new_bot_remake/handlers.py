@@ -62,9 +62,9 @@ async def unsub_full_func(username:str) -> bool:
 
 @router.message(F.text == "Profile")
 async def profile_handler(message:Message):
-    
     user_name = message.from_user.username
     user_id = message.from_user.id
+    await change_user_state(str(user_id),False)
     res_unsub:bool = await unsub_full_func(str(user_id))
     if res_unsub:
         await message.asnwer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Вы можете пользоваться ботом в пределе бесплатного тарифа.Благодарим за поддержку")
@@ -135,6 +135,7 @@ async def  succes_ful_payment(message:Message):
 @router.message(F.text == "Chat")
 async def chat_handler(message:Message):
     user_id = message.from_user.id
+    await change_user_state(str(user_id),True)
     res_unsub:bool = await unsub_full_func(str(user_id))
     if res_unsub:
         await message.asnwer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Вы можете пользоваться ботом в пределе бесплатного тарифа.Благодарим за поддержку")
@@ -143,73 +144,75 @@ async def chat_handler(message:Message):
 
 @router.message(F.text & ~F.command)
 async def answer_messages(message:Message):
-   
-        user_id = message.from_user.id
-        res_unsub:bool = await unsub_full_func(str(user_id))
-        if res_unsub:
-            await message.asnwer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Вы можете пользоваться ботом в пределе бесплатного тарифа.Благодарим за поддержку")
-        await message.answer("Думаю...")
-        user_messages = await get_all_user_messsages(str(user_id))
-        is_user_subbed_ = await is_user_subbed(str(user_id))
-        if not is_user_subbed_:
-            user_free_req = await get_amount_of_zaproses(str(user_id))
-            if user_free_req == 0:
-                await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
+        user_state = await get_user_state(str(message.from_user.id))
+        if user_state:
+            user_id = message.from_user.id
+            res_unsub:bool = await unsub_full_func(str(user_id))
+            if res_unsub:
+                await message.asnwer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Вы можете пользоваться ботом в пределе бесплатного тарифа.Благодарим за поддержку")
+            await message.answer("Думаю...")
+            user_messages = await get_all_user_messsages(str(user_id))
+            is_user_subbed_ = await is_user_subbed(str(user_id))
+            if not is_user_subbed_:
+                user_free_req = await get_amount_of_zaproses(str(user_id))
+                if user_free_req == 0:
+                    await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
+                else:
+                    await remove_free_zapros(str(user_id))
+                    response = ask_chat_gpt(str(message.text) + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages}")
+                    await write_message(str(user_id),str(message.text),response)
+                    await message.answer(text = response)
             else:
-                await remove_free_zapros(str(user_id))
                 response = ask_chat_gpt(str(message.text) + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages}")
                 await write_message(str(user_id),str(message.text),response)
                 await message.answer(text = response)
-        else:
-            response = ask_chat_gpt(str(message.text) + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages}")
-            await write_message(str(user_id),str(message.text),response)
-            await message.answer(text = response)
-                
+                    
             
 @router.message(F.photo)
 async def answer_with_photo(message:Message):
-   
-        user_id = message.from_user.id
-        res_unsub:bool = await unsub_full_func(str(user_id))
-        if res_unsub:
-            await message.asnwer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Вы можете пользоваться ботом в пределе бесплатного тарифа.Благодарим за поддержку")
-        await message.answer("Думаю...")
-        photo = message.photo[-1]
-        user_messages = await get_all_user_messsages(str(user_id))
-        file = await message.bot.get_file(photo.file_id)
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
-            await message.bot.download_file(file.file_path, tmp_file.name)
-            results = reader.readtext(tmp_file.name)
-        os.unlink(tmp_file.name)
-        
-        if results:
-            text_lines = []
-            for (bbox,text,prob) in results:
-                if prob > 0.3:
-                    text_lines.append(text)
-            result_text = "\n".join(text_lines)
-        else:
-            await message.answer(text = "Текст с фотографии не извелечен")      
-            return      
-        
-        is_user_subbed_ = await is_user_subbed(str(user_id))
-        if not is_user_subbed_:
-            user_free_req = await get_amount_of_zaproses(str(user_id))
-            if user_free_req == 0:
-                await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
+        user_state = await get_user_state(str(message.from_user.id))
+        if user_state:
+            user_id = message.from_user.id
+            res_unsub:bool = await unsub_full_func(str(user_id))
+            if res_unsub:
+                await message.asnwer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Вы можете пользоваться ботом в пределе бесплатного тарифа.Благодарим за поддержку")
+            await message.answer("Думаю...")
+            photo = message.photo[-1]
+            user_messages = await get_all_user_messsages(str(user_id))
+            file = await message.bot.get_file(photo.file_id)
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
+                await message.bot.download_file(file.file_path, tmp_file.name)
+                results = reader.readtext(tmp_file.name)
+            os.unlink(tmp_file.name)
+            
+            if results:
+                text_lines = []
+                for (bbox,text,prob) in results:
+                    if prob > 0.3:
+                        text_lines.append(text)
+                result_text = "\n".join(text_lines)
             else:
-                
+                await message.answer(text = "Текст с фотографии не извелечен")      
+                return      
+            
+            is_user_subbed_ = await is_user_subbed(str(user_id))
+            if not is_user_subbed_:
+                user_free_req = await get_amount_of_zaproses(str(user_id))
+                if user_free_req == 0:
+                    await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
+                else:
+                    
+                    full_text:str = str(message.text) + "\n" + message.caption + "\n" + result_text
+                    await remove_free_zapros(str(user_id))
+                    response = ask_chat_gpt(str(full_text) + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages}")
+                    await write_message(str(user_id),str(full_text),response)
+                    await message.answer(text = response)
+            else:
                 full_text:str = str(message.text) + "\n" + message.caption + "\n" + result_text
-                await remove_free_zapros(str(user_id))
-                response = ask_chat_gpt(str(full_text) + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages}")
+                response = ask_chat_gpt(str(full_text + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages}"))
                 await write_message(str(user_id),str(full_text),response)
                 await message.answer(text = response)
-        else:
-            full_text:str = str(message.text) + "\n" + message.caption + "\n" + result_text
-            response = ask_chat_gpt(str(full_text + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages}"))
-            await write_message(str(user_id),str(full_text),response)
-            await message.answer(text = response)
-    
+        
 async def read_text_from_image(file_path:str) -> str:
     results = reader.readtext(file_path,detail = 0,paragraph=True)
     return "\n".join(results) if results else ""
@@ -233,7 +236,8 @@ async def read_pdf(path:str) -> str:
 
 @router.message(F.document)
 async def answer_with_document(message:Message):
-    
+    user_state = await get_user_state(str(message.from_user.id))
+    if user_state:
         user_id = message.from_user.id
         res_unsub:bool = await unsub_full_func(str(user_id))
         if res_unsub:
