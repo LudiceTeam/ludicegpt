@@ -23,6 +23,7 @@ from backend.database.core import create_deafault_user_data,remove_free_zapros,c
 from datetime import timedelta,datetime
 from typing import List
 from backend.database.state_database.state_core import create_user_state,change_user_state,get_user_state
+import time
 
 router = Router()
 
@@ -150,7 +151,7 @@ async def answer_messages(message:Message):
             res_unsub:bool = await unsub_full_func(str(user_id))
             if res_unsub:
                 await message.asnwer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Вы можете пользоваться ботом в пределе бесплатного тарифа.Благодарим за поддержку")
-            await message.answer("Думаю...")
+            think_message = await message.answer("Думаю...")
             user_messages = await get_all_user_messsages(str(user_id))
             is_user_subbed_ = await is_user_subbed(str(user_id))
             if not is_user_subbed_:
@@ -160,9 +161,19 @@ async def answer_messages(message:Message):
                 else:
                     await remove_free_zapros(str(user_id))
                     response = ask_chat_gpt(str(message.text) + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},не нужно на это ничего отвечать просто это сообщения человека что бы сохранился контекст")
+                    try:
+                        await think_message.delete()
+                    except Exception as e:
+                        raise Exception(f"Error : {e}")
+                    time.sleep(0.5)
                     await write_message(str(user_id),str(message.text),response)
                     await message.answer(text = response)
             else:
+                try:
+                    await think_message.delete()
+                except Exception as e:
+                    raise Exception(f"Error : {e}")
+                time.sleep(0.5)
                 response = ask_chat_gpt(str(message.text) + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages}")
                 await write_message(str(user_id),str(message.text),response)
                 await message.answer(text = response)
@@ -176,7 +187,7 @@ async def answer_with_photo(message:Message):
             res_unsub:bool = await unsub_full_func(str(user_id))
             if res_unsub:
                 await message.asnwer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Вы можете пользоваться ботом в пределе бесплатного тарифа.Благодарим за поддержку")
-            await message.answer("Думаю...")
+            think_message = await message.answer("Думаю...")
             photo = message.photo[-1]
             user_messages = await get_all_user_messsages(str(user_id))
             file = await message.bot.get_file(photo.file_id)
@@ -205,11 +216,21 @@ async def answer_with_photo(message:Message):
                     full_text:str = str(message.text) + "\n" + message.caption + "\n" + result_text
                     await remove_free_zapros(str(user_id))
                     response = ask_chat_gpt(str(full_text) + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages}")
+                    try:
+                        await think_message.delete()
+                    except Exception as e:
+                        raise Exception(f"Error : {e}")
+                    time.sleep(0.5)
                     await write_message(str(user_id),str(full_text),response)
                     await message.answer(text = response)
             else:
                 full_text:str = str(message.text) + "\n" + message.caption + "\n" + result_text
                 response = ask_chat_gpt(str(full_text + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages}"))
+                try:
+                    await think_message.delete()
+                except Exception as e:
+                    raise Exception(f"Error : {e}")
+                time.sleep(0.5)
                 await write_message(str(user_id),str(full_text),response)
                 await message.answer(text = response)
         
@@ -242,7 +263,7 @@ async def answer_with_document(message: Message):
         res_unsub: bool = await unsub_full_func(str(user_id))
         if res_unsub:
             await message.answer(text="Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Вы можете пользоваться ботом в пределе бесплатного тарифа.Благодарим за поддержку")
-        await message.answer("Думаю...")
+        think_message = await message.answer("Думаю...")
         document = message.document
         
         filename = document.file_name.lower()
@@ -289,11 +310,21 @@ async def answer_with_document(message: Message):
                     full_text: str = str(message.text) + "\n" + str(message.caption) + "\n" + text
                     await remove_free_zapros(str(user_id))
                     response = ask_chat_gpt(str(full_text) + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages}")
+                    try:
+                        await think_message.delete()
+                    except Exception as e:
+                        raise Exception(f"Error : {e}")
+                    time.sleep(0.5)
                     await write_message(str(user_id), str(full_text), response)
                     await message.answer(text=response)
             else:
                 full_text = str(message.text) + "\n" + str(message.caption) + "\n" + text
                 response = ask_chat_gpt(str(full_text + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages}"))
+                try:
+                    await think_message.delete()
+                except Exception as e:
+                    raise Exception(f"Error : {e}")
+                time.sleep(0.5)
                 await write_message(str(user_id), str(full_text), response)
                 await message.answer(text=response)                
                     
