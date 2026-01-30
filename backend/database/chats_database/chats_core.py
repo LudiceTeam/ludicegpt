@@ -76,7 +76,7 @@ async def get_all_user_messsages(username:str) -> str:
             data = res.fetchall()
             result:List[str] = []
             for dt in data:
-                result.append(str(dt[0]))
+                result.append(str(dt[2]))
             return "\n".join(result)     
         except Exception as e:
             raise  Exception(f"Error : {e}") 
