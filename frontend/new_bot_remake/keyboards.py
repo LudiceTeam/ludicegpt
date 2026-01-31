@@ -28,5 +28,9 @@ buy_req_keyboard = ReplyKeyboardMarkup(resize_keyboard=True,keyboard=[
     [KeyboardButton(text = "Back")]
 ])
 
+inline_pay = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text = "Pay 250 ⭐",pay = True)]
+])
+
 
 

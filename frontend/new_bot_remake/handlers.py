@@ -1,6 +1,6 @@
 from aiogram import Bot,Dispatcher,F,Router
 from aiogram.filters import CommandStart,Command
-from aiogram.types import Message,File,Video,PhotoSize,LabeledPrice,PreCheckoutQuery,ContentType
+from aiogram.types import Message,File,Video,PhotoSize,LabeledPrice,PreCheckoutQuery,ContentType,CallbackQuery
 import aiogram
 import keyboards as kb
 #from main import bot
@@ -96,35 +96,69 @@ Date of subscribtion to end : {user_data["Date of subscribtion to end"] if user_
 
 @router.message(F.text == "Subscribe")
 async def subscribe_handler(message:Message):
-    user_id = message.from_user.id
   
-    buy_sub_text = "Тестовое лицензионное соглашение" # вставить норм текст для подписки
-    await message.answer(buy_sub_text,reply_markup=kb.buy_sub_keyboard)
+    buy_sub_text = """Лицензионное соглашение
+
+Настоящие условия оплаты регулируют порядок расчета за доступ к услугам искусственного интеллекта, предоставляемым компанией Ludice Team (далее — ChatGPT). 
+
+1. Тарифы и планы. 
+Клиент выбирает тариф по объему запросов, подписку с фиксированным лимитом или безлимитный доступ. Тарифы можно  посмотреть открыв одну из вкладок в меню приложения и могут обновляться с уведомлением за 30 дней. 
+
+2. Порядок оплаты. 
+Оплата производится заранее при активации тарифа или ежемесячно по дате подписки. При использовании пробного периода оплата взимается только по окончании бесплатной стадии, если клиент не отменил услугу. Прием платежей осуществляется Телеграмм-звездами или Юкассой
+
+3. Использование и лимиты. 
+Превышение установленного лимита по запросам в рамках выбранного тарифа приводит к начислению дополнительных платежей или автоматическому переходу на следующий план с уведомлением клиента. 
+
+4. Валюта и налоги. 
+Все платежи указаны в рублях; налог рассчитывается в соответствии с применимым законодательством Российской Федерации и добавляется к сумме на счете. 
+
+5. Просрочка и ответственность. 
+В случае задержки Сервис может приостанавливать доступ к сервису и взимать пени согласно политике. 
+
+6. Возврат средств. 
+Деньги, которыми были оплачены услуги возврату не подлежат.
+
+7. Изменение условий. Исполнитель вправе вносить изменения в условия оплаты с уведомлением клиента за 30 дней. Любые споры по оплате подлежат рассмотрению в арбитражном порядке и по месту нахождения Исполнителя настоящего.""" 
+    prices = [LabeledPrice(label="250 ⭐", amount=250)]
+    
+    await message.bot.send_invoice(
+        chat_id=message.from_user.id,
+        title="Покупка подписки",
+        description=buy_sub_text,
+        payload="subscribtion",
+        provider_token="410694247:TEST:48b50af2-4c6d-4c87-8d3f-6912d0d8c38a",
+        prices=prices,
+        currency="XTR",    
+        reply_markup=kb.inline_pay
+    )
+    
+   
+@router.pre_checkout_query()
+async def pre_checkout_handler(pre_checkout_query: PreCheckoutQuery):
+    await pre_checkout_query.answer(ok=True)
+
+@router.message(F.successful_payment)
+async def succesful_payment_handler(message:Message):
+    
+    payment = message.successful_payment
+    user_id = str(message.from_user.id)
+    invoice = payment.invoice_payload.split("_")
+    
+    
+    if "ludice_team" in payment.invoice_payload:
+        await buy_zaproses(user_id,int(invoice[-1]))
+        await message.answer(text = f"Вы купили {invoice[-1]} запросов. Спасибо за покупку. Приятного пользования.")
+    elif "subscribtion" in payment.invoice_payload:
+        await subscribe(user_id)
+        await message.answer("Вы успешно подписались. Спасибо за покупку. Приятного пользования.")
+    
+     
 
 @router.message(F.text == "Back")
 async def back(message:Message):
     await message.answer(text = "Вы вернулись в главное меню",reply_markup=kb.main_keyboard)
 
-#сделать  норм invoice
-@router.message(F.text == "Buy subscribtion")
-async def buy_sub_handler(message:Message):
-    await message.bot.send_invoice(
-        chat_id=message.chat.id,
-        title="Название товара",
-        description="Описание товара",
-        payload="test_payload", 
-        provider_token="YOUR_PROVIDER_TOKEN", 
-        currency="RUB",
-        prices=[
-            LabeledPrice(label="Товар 1", amount=10000),  # 100.00 RUB
-            LabeledPrice(label="Скидка", amount=-2000),   # -20.00 RUB
-        ],
-        start_parameter="subscribtion",
-        need_email=True, 
-        need_phone_number=False,
-        is_flexible=False, 
-        #reply_markup=kb.back_keyboard
-    )
 
 
 @router.message(F.text == "Buy Requests")
@@ -144,19 +178,6 @@ async def buy_20_req_handler(message:Message):
 
 
 
-    
-
-@router.message(F.successful_payment)
-async def succesful_payment_handler(message:Message):
-    payment = message.successful_payment
-    user_id = str(message.from_user.id)
-    invoice = payment.split('_')
-    if "ludice_team" in payment:
-        await buy_zaproses(user_id,int(invoice["-1"]))
-        await message.answer(text = f"Вы купили {invoice["-1"]} запросов. Спасибо за покупку. Приятного пользования.")
-    elif "subscribtion" in invoice:
-        await subscribe(user_id)
-        await message.answer("Вы успешно подписались. Спасибо за покупку. Приятного пользования.")
     
 @router.message(F.text == "Reset Context")
 async def reset(message:Message):
