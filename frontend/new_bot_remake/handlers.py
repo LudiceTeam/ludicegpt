@@ -75,10 +75,8 @@ async def profile_handler(message:Message):
     user_data[str(user_id)] = user_name
     user_subbed:bool = await  is_user_subbed(str(user_id))
     result = f"""
-        Profile of {user_data[str(user_id)]}
-        
-        
-        Free requests : {user_data["Free requests"]}
+        Profile of @{user_data[str(user_id)]}
+        Requests : {user_data["Free requests"]}
         
         Subscribed : {user_data["Subscribed"]}
 
