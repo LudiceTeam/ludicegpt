@@ -141,16 +141,7 @@ async def buy_20_req_handler(message:Message):
     await message.answer(text = "Текст для покупки 20 запросов")
     # инмвойс в звездах на покупку 20 ти запросов
    
-@router.message(F.text == "50 Requests")
-async def buy_50_req_handler(message:Message):
-    await message.answer(text = "Текст для покупки 50 запросов")
-    # инмвойс в звездах на покупку 50 ти запросов
 
-@router.message(F.text == "100 Requests")
-async def buy_100_req_handler(message:Message):
-    await message.answer(text = "Текст для покупки 100 запросов")
-    # инмвойс в звездах на покупку 5 ти запросов
-        
 
 
     
@@ -213,8 +204,15 @@ async def answer_messages(message:Message):
                     except Exception as e:
                         raise Exception(f"Error : {e}")
                     time.sleep(0.5)
+                    
+                    
+                    if len(response) > 4096:
+                        for i in range(0,len(response),4096):
+                            part = response[i:i + 4096]
+                            await message.answer(text = part)
+                    else:
+                        await message.answer(text = response)        
                     await write_message(str(user_id),str(message.text),response)
-                    await message.answer(text = response)
             else:
                 response = ask_chat_gpt(str(message.text) + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages}")
                 try:
@@ -222,8 +220,15 @@ async def answer_messages(message:Message):
                 except Exception as e:
                     raise Exception(f"Error : {e}")
                 time.sleep(0.5)
+                
+                
+                if len(response) > 4096:
+                    for i in range(0,len(response),4096):
+                        part = response[i:i + 4096]
+                        await message.answer(text = part)
+                else:
+                    await message.answer(text = response)        
                 await write_message(str(user_id),str(message.text),response)
-                await message.answer(text = response)
                     
  
 
@@ -374,8 +379,16 @@ async def answer_with_photo(message: Message):
                 except Exception as e:
                     raise Exception(f"Error: {e}")
                 time.sleep(0.5)
+                
+                
+                if len(response) > 4096:
+                    for i in range(0,len(response),4096):
+                        part = response[i:i + 4096]
+                        await message.answer(text = part)
+                else:
+                    await message.answer(text = response)        
                 await write_message(str(user_id), str(full_text), response)
-                await message.answer(text=response)
+               
         else:
             full_text: str = str(message.text) + "\n" + (message.caption or "") + "\n" + result_text
             response = ask_chat_gpt(str(full_text) + f"Вот все сообщения пользователя чтобы тебе было легче его понимать: {user_messages}")
@@ -384,8 +397,14 @@ async def answer_with_photo(message: Message):
             except Exception as e:
                 raise Exception(f"Error: {e}")
             time.sleep(0.5)
+            
+            if len(response) > 4096:
+                    for i in range(0,len(response),4096):
+                        part = response[i:i + 4096]
+                        await message.answer(text = part)
+            else:
+                await message.answer(text = response)
             await write_message(str(user_id), str(full_text), response)
-            await message.answer(text=response)
             
             
             
@@ -469,9 +488,15 @@ async def answer_with_document(message: Message):
                         await think_message.delete()
                     except Exception as e:
                         raise Exception(f"Error : {e}")
+                    
                     time.sleep(0.5)
+                    if len(response) > 4096:
+                        for i in range(0,len(response),4096):
+                            part = response[i:i + 4096]
+                            await message.answer(text = part)
+                    else:
+                        await message.answer(text = response)
                     await write_message(str(user_id), str(full_text), response)
-                    await message.answer(text=response)
             else:
                 full_text = str(message.text) + "\n" + str(message.caption) + "\n" + text
                 response = ask_chat_gpt(str(full_text + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages}"))
@@ -479,12 +504,19 @@ async def answer_with_document(message: Message):
                     await think_message.delete()
                 except Exception as e:
                     raise Exception(f"Error : {e}")
+                
                 time.sleep(0.5)
+                if len(response) > 4096:
+                    for i in range(0,len(response),4096):
+                        part = response[i:i + 4096]
+                        await message.answer(text = part)
+                else:
+                    await message.asnwer(text = response)      
                 await write_message(str(user_id), str(full_text), response)
-                await message.answer(text=response)                
                     
         except Exception as e:
             raise Exception(f"Error : {e}")
 
 
 #сделать разные цены что можно купить отдельно просто запросы
+# пофиксить ошибку с длинным запросом
