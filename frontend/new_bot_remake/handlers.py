@@ -173,10 +173,12 @@ async def succesful_payment_handler(message:Message):
     
     if "ludice_team" in payment.invoice_payload:
         await buy_zaproses(user_id,int(invoice[-1]))
-        await message.answer(text = f"Вы купили {invoice[-1]} запросов. Спасибо за покупку. Приятного пользования.")
+        await message.answer(text = f"✅ Вы купили {invoice[-1]} запросов. Спасибо за покупку. Приятного пользования.")
     elif "subscribtion" in payment.invoice_payload:
         await subscribe(user_id)
-        await message.answer("Вы успешно подписались. Спасибо за покупку. Приятного пользования.")
+        await message.answer("✅ Вы успешно подписались. Спасибо за покупку. Приятного пользования.")
+    else:
+        await message.answer("Что то пошло не так. Попробуйте снова.")
     
      
 
@@ -191,7 +193,7 @@ async def reset(message:Message):
     user_id = str(message.from_user.id)
     await message.answer(text = "Вы удалите все итсторию переписки,после этого ChatGPT создаст новый чат")
     await delete_all_messages(user_id)
-    await message.answer(text = "История отчищена.Можете продолжать пользоваться")
+    await message.answer(text = "✅ История отчищена.Можете продолжать пользоваться")
 
 @router.message(F.text == "Help")
 async def help(message:Message):
