@@ -19,7 +19,7 @@ from docx import Document
 from doc_handler import extract_text_from_docx_with_images
 from backend.database.chats_database.chats_core import write_message,get_all_user_messsages,delete_all_messages
 from backend.api import ask_chat_gpt
-from backend.database.core import create_deafault_user_data,remove_free_zapros,check_free_zapros_amount,get_amount_of_zaproses,subscribe,set_sub_bac_to_false,get_me,unsub_all_users_whos_sub_is_ending_today,is_user_subbed,buy_zaproses,get_sub_date_end
+from backend.database.core import create_deafault_user_data,remove_free_zapros,check_free_zapros_amount,get_amount_of_zaproses,subscribe,set_sub_bac_to_false,get_me,is_user_subbed,buy_zaproses,get_sub_date_end,subscribe_basic,unsub_basic,is_user_subbed_basic,get_last_ref_basic,refil_zap,upadate_last_ref_date
 from datetime import timedelta,datetime
 from typing import List
 from backend.database.state_database.state_core import create_user_state,change_user_state,get_user_state
@@ -40,16 +40,17 @@ async def start_messsage(message:Message):
     await create_user_state(str(user_id))
     await message.answer("Welcome",reply_markup=kb.main_keyboard)# вставить сюда норм текст
     
+async def transform_date_to_int(date:str) -> int:
+        dt:str = ""
+        for tm in str(date).split('-'):
+            dt += tm
+        return int(dt)
+        
+
 async def unsub_full_func(username:str) -> bool:
     if await is_user_subbed(username):
         user_end_date:str = await get_sub_date_end(username)
         date_now = datetime.now().date()
-        
-        async def transform_date_to_int(date:str) -> int:
-            dt:str = ""
-            for tm in str(date).split('-'):
-                dt += tm
-            return int(dt)
         
         date_int_end:int = await transform_date_to_int(str(user_end_date))
         date_int_now:int = await transform_date_to_int(str(date_now)) 
@@ -58,7 +59,19 @@ async def unsub_full_func(username:str) -> bool:
             await set_sub_bac_to_false(username)  
             return True
         return False 
-    return False
+    
+    elif await is_user_subbed_basic(username):
+        user_end_sub:str = await get_sub_date_end(username)
+        date_now_basic = datetime.now().date()
+        date_int_end:int = await transform_date_to_int(str(user_end_sub))
+        date_int_now:int = await transform_date_to_int(str(date_now_basic)) 
+        
+        if date_int_now >= date_int_end:
+            await unsub_basic(username)  
+            return True
+        return False 
+    else:
+        return False
             
         
     
@@ -70,20 +83,45 @@ async def profile_handler(message:Message):
     await change_user_state(str(user_id),False)
     res_unsub:bool = await unsub_full_func(str(user_id))
     if res_unsub:
-        await message.asnwer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Вы можете пользоваться ботом в пределе бесплатного тарифа.Благодарим за поддержку")
+        await message.answer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Вы можете пользоваться ботом в пределе бесплатного тарифа.Благодарим за поддержку")
     user_data = await get_me(str(user_id))
     user_data[str(user_id)] = user_name
+    
     user_subbed:bool = await  is_user_subbed(str(user_id))
+    user_basic_sub:bool = await is_user_subbed_basic(str(user_id))
+    
+   
+    async def get_request_text() -> str:
+        
+        if user_subbed:
+            return "безлимит"
+        elif user_basic_sub:
+            user_zaps = await get_amount_of_zaproses(str(user_id))
+            return f"{user_zaps}/50"
+        else:
+            user_zaps = await get_amount_of_zaproses(str(user_id))
+            return f"{user_zaps}/20"
+    
+    async def get_user_subscribtion_type() -> str:
+       
+        
+        if user_subbed:
+            return "Premium (Безлимитная)"
+        elif user_basic_sub:
+            return "Basic (50 запросов в день)"
+        else:
+            return "Не активирована"
+            
     
     new_profile_desc = f"""
-        Profile of @{user_data[str(user_id)]}:
+        Профиль @{user_data[str(user_id)]}:
         
-Запросов осталось: {user_data["Free requests"] + "/20" if not user_data["Subscribed"] else "безлимит"}
+Запросов осталось: {await get_request_text()}
 
-Статус подписки: {"активирована" if user_data["Subscribed"] else "не активированна"}
+Статус подписки: {await get_user_subscribtion_type()}
 
 
-Срок истечения подписки: {user_data["Date of subscribtion to end"] if user_data["Subscribed"] else "подписка не активированна"}
+Срок истечения подписки: {user_data["Date of subscribtion to end"] if user_data["Subscribed"] else "Подписка не активированна"}
 
     """
     if not user_subbed:
@@ -97,7 +135,11 @@ async def profile_handler(message:Message):
     )
 
 @router.message(F.text == "Subscribe")
-async def subscribe_handler(message:Message):
+async def subscribe_hander(message:Message):
+    await message.answer(text = "Выберете тип подписки",reply_markup=kb.subscrition_keyborad)
+
+@router.message(F.text == "Premium")
+async def premium_handler(message:Message):
   
     buy_sub_text = """Лицензионное соглашение
 

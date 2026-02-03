@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from backend.database.models import metadata_obj,table
 import asyncio
 import atexit
+#backend.database.
 
 
 load_dotenv()
@@ -305,3 +306,4 @@ def cleanup():
         pass   
 atexit.register(cleanup)    
  
+

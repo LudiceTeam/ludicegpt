@@ -9,7 +9,7 @@ import json
 import os
 import time
 from dotenv import load_dotenv
-from backend.database.core import remove_free_zapros,check_free_zapros_amount,buy_zaproses,get_amount_of_zaproses,is_user_subbed,create_table,get_all_data,get_me,subscribe,is_user_exists,create_deafault_user_data,set_sub_bac_to_false,unsub_all_users_whos_sub_is_ending_today
+from backend.database.core import remove_free_zapros,check_free_zapros_amount,buy_zaproses,get_amount_of_zaproses,is_user_subbed,create_table,get_all_data,get_me,subscribe,is_user_exists,create_deafault_user_data,set_sub_bac_to_false
 from backend.database.chats_database.chats_core import write_message,get_all_user_messsages,delete_message,delete_all_messages
 import asyncio
 import atexit
@@ -212,14 +212,7 @@ async def is_user_subbed_api(req:UsernameOnly,x_signature:str = Header(...),x_ti
     except Exception as e:
          raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST,detail = f"Error : {e}")
 
-@app.get("/unsub/all",dependencies=[Depends(safe_get)])
-async def unsub_all_api():
-    try:
-        res =  await unsub_all_users_whos_sub_is_ending_today()
-        return res
-    except Exception as e:
-        raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST,detail = f"Error : {e}")
-    
+
 
 
 @app.post("/getme")
