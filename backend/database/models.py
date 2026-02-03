@@ -10,5 +10,7 @@ table = Table("ai_girl_data",
               Column("balance",Integer),
               Column("zap",Integer),
               Column("sub",Boolean),
-              Column("date",String)
-              )
+              Column("date",String),
+              Column("basic_sub",Boolean),
+              Column("last_ref",String) # дата когда обновили запросы
+)

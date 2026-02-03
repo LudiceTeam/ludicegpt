@@ -56,7 +56,9 @@ async def create_deafault_user_data(username:str) -> bool:
                         balance = 0,
                         zap = 20,
                         sub = False,
-                        date = ""
+                        date = "",
+                        basic_sub = False,
+                        last_ref = ""
                     )
                     await conn.execute(stmt)
                     return True
@@ -147,7 +149,35 @@ async def subscribe(username:str):
         except Exception as e:
             raise Exception(f"Error : {e}")
         
+async def subscribe_basic(username:str):
+    async with AsyncSession(async_engine) as conn:
+        async with conn.begin():
+            try:
+                date = datetime.now().date()
+                date_exp = datetime.now().date() + timedelta(day = 30)
+                stmt = table.update().where(table.c.username == username).values(
+                    basic_sub = True,
+                    last_res = str(date),
+                    zap = 50 ,
+                    date = str(date_exp)
+                )
+                await conn.execute(stmt)
+            except Exception as e:
+                raise Exception(f"Error : {e}")
 
+async def unsub_basic(username:str):
+    async with AsyncSession(async_engine) as conn:
+        async with conn.begin():
+            try:
+                stmt = table.update().whree(table.c.username == username).values(
+                    basic_sub = False,
+                    last_res = "",
+                    date = ""
+                )
+                await conn.execute(stmt)
+            except Exception as e:
+                raise Exception(f"Error : {e}")
+            
 async def set_sub_bac_to_false(username:str):
     async with AsyncSession(async_engine) as conn:
         try:
@@ -191,24 +221,7 @@ async def get_me(username:str) -> dict:
             raise  Exception(f"Error : {e}") 
         
 
-async def unsub_all_users_whos_sub_is_ending_today():           
-    async with AsyncSession(async_engine) as conn:
-        try:
-            stmt = select(table.c.username).where(table.c.date == str(datetime.now().date()))
-            #stmt = select(table.c.username)
-            res = await conn.execute(stmt)
-            data = res.fetchall()
-            usernames = []
-            for user in data:
-                usernames.append(user[0])
-            for user in usernames:
-                try:
-                    await set_sub_bac_to_false(user)
-                except Exception as e:
-                    raise Exception(f"Error while unsub : {e}")
-            return True    
-        except Exception as e:
-            raise  Exception(f"Error : {e}") 
+
 
 async def get_sub_date_end(username:str) -> str:
     async with AsyncSession(async_engine) as conn:

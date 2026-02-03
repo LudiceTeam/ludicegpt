@@ -78,7 +78,7 @@ async def profile_handler(message:Message):
     new_profile_desc = f"""
         Profile of @{user_data[str(user_id)]}:
         
-Запросов осталось: {user_data["Free requests"]}
+Запросов осталось: {user_data["Free requests"] + "/20" if not user_data["Subscribed"] else "безлимит"}
 
 Статус подписки: {"активирована" if user_data["Subscribed"] else "не активированна"}
 
@@ -557,3 +557,4 @@ async def answer_with_document(message: Message):
 
 # написать оплату для покупки запросов
 # поменять текст в подписке и написать кнопку "About us" и поддрежка
+#сделать новую подписку

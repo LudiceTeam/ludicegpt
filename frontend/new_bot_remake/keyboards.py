@@ -32,4 +32,7 @@ inline_pay = InlineKeyboardMarkup(inline_keyboard=[
 ])
 
 
-
+subscrition_keyborad = ReplyKeyboardMarkup(resize_keyboard=True,keyboard=[
+    [KeyboardButton(text = "Premium"),KeyboardButton(text = "Basic")],
+    [KeyboardButton(text = "Back")]
+])
