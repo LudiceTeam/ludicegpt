@@ -256,7 +256,18 @@ async def refil_zap(username:str):
             except Exception as e:
                 raise Exception(f"Error : {e}")
     
-
+async def upadate_last_ref_date(username:str):
+    async with AsyncSession(async_engine) as conn:
+        async with conn.begin():
+            try:
+                date_cur = datetime.now().date()
+                stmt = table.update().where(table.c.username == username).values(
+                    last_ref = str(date_cur)
+                )
+                await conn.execute(stmt)
+            except Exception as e:
+                raise Exception(f"Error : {e}")
+        
             
 
 async def get_me(username:str) -> dict:
