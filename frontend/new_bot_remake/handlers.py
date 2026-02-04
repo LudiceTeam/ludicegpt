@@ -52,8 +52,8 @@ async def refil_requests_basic_sub(username:str):
         date_now = datetime.now().date()
         user_last_refil_date = await get_last_ref_basic(username)
         
-        dt_int = transform_date_to_int(str(date_now))
-        last_ref_int = transform_date_to_int(str(user_last_refil_date))
+        dt_int = await transform_date_to_int(str(date_now))
+        last_ref_int = await transform_date_to_int(str(user_last_refil_date))
         
         if dt_int > last_ref_int:
             await refil_zap(username)
@@ -128,6 +128,14 @@ async def profile_handler(message:Message):
             return "Basic (25 запросов в день)"
         else:
             return "Не активирована"
+    
+    async def get_sub_end_text() -> str:
+        if user_subbed:
+            return user_data["Date of subscribtion to end"]  
+        elif user_basic_sub:
+            return user_data["Date of subscribtion to end"]
+        else:
+            return "Подписка не активирована" 
             
     
     new_profile_desc = f"""
@@ -138,7 +146,7 @@ async def profile_handler(message:Message):
 Статус подписки: {await get_user_subscribtion_type()}
 
 
-Срок истечения подписки: {user_data["Date of subscribtion to end"] if user_data["Subscribed"] else "Подписка не активированна"}
+Срок истечения подписки: {await get_sub_end_text()}
 
     """
     if not user_subbed:
@@ -176,7 +184,7 @@ async def premium_handler(message:Message):
 async def basic_sub_handler(message:Message):
     
     buy_sub_text = "1) Стоимость: 199 звезд / 30 дней 2) Лимит: 25 запросов в день"
-    prices = [LabeledPrice(label="199 ⭐", amount=199)]
+    prices = [LabeledPrice(label="199 ⭐", amount=2)]
     await message.bot.send_invoice(
     chat_id=message.from_user.id,
     title="Basic",
@@ -295,8 +303,14 @@ async def answer_messages(message:Message):
             
             if not is_user_subbed_:
                 user_free_req = await get_amount_of_zaproses(str(user_id))
+                user_basic_sub = await is_user_subbed_basic(str(user_id))
                 if user_free_req == 0:
-                    await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
+                    if user_basic_sub:
+                        await think_message.delete()
+                        await message.answer(text = "У вас на сегодня закончились запросы.Попробуйте снова завтра")
+                    else:
+                        await think_message.delete()
+                        await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
                 else:
                     await remove_free_zapros(str(user_id))
                     response = ask_chat_gpt(str(message.text) + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},не нужно на это ничего отвечать просто это сообщения человека что бы сохранился контекст")
@@ -469,9 +483,14 @@ async def answer_with_photo(message: Message):
         
         if not is_user_subbed_:
             user_free_req = await get_amount_of_zaproses(str(user_id))
+            user_basic_sub = await is_user_subbed_basic(str(user_id))
             if user_free_req == 0:
-                await message.answer(text="У вас не осталось бесплатных запросов. Купить подписку вы можете перейдя в профиль")
-                await think_message.delete()
+                if user_basic_sub:
+                    await think_message.delete()
+                    await message.answer(text = "У вас на сегодня закончились запросы.Попробуйте снова завтра")
+                else:
+                    await think_message.delete()
+                    await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
             else:
                 full_text: str = str(message.text) + "\n" + (message.caption or "") + "\n" + result_text
                 await remove_free_zapros(str(user_id))
@@ -581,8 +600,14 @@ async def answer_with_document(message: Message):
             is_user_subbed_ = await is_user_subbed(str(user_id))
             if not is_user_subbed_:
                 user_req = await get_amount_of_zaproses(str(user_id))
+                user_basic_sub = await is_user_subbed_basic(str(user_id))
                 if user_req == 0:
-                    await message.answer(text="У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
+                    if user_basic_sub:
+                        await think_message.delete()
+                        await message.answer(text = "У вас на сегодня закончились запросы.Попробуйте снова завтра")
+                    else:
+                        await think_message.delete()
+                        await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль или просто докупить запросы.")
                 else:
                     full_text: str = str(message.text) + "\n" + str(message.caption) + "\n" + text
                     await remove_free_zapros(str(user_id))

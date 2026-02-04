@@ -198,10 +198,10 @@ async def subscribe_basic(username:str):
         async with conn.begin():
             try:
                 date = datetime.now().date()
-                date_exp = datetime.now().date() + timedelta(day = 30)
+                date_exp = datetime.now().date() + timedelta(days = 30)
                 stmt = table.update().where(table.c.username == username).values(
                     basic_sub = True,
-                    last_res = str(date),
+                    last_ref = str(date),
                     zap = 25,
                     date = str(date_exp)
                 )
@@ -215,7 +215,7 @@ async def unsub_basic(username:str):
             try:
                 stmt = table.update().whree(table.c.username == username).values(
                     basic_sub = False,
-                    last_res = "",
+                    last_ref = "",
                     date = ""
                 )
                 await conn.execute(stmt)
