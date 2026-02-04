@@ -184,7 +184,7 @@ async def premium_handler(message:Message):
 async def basic_sub_handler(message:Message):
     
     buy_sub_text = "1) Стоимость: 199 звезд / 30 дней 2) Лимит: 25 запросов в день"
-    prices = [LabeledPrice(label="199 ⭐", amount=2)]
+    prices = [LabeledPrice(label="199 ⭐", amount=199)]
     await message.bot.send_invoice(
     chat_id=message.from_user.id,
     title="Basic",
