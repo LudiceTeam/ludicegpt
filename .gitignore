@@ -10,3 +10,5 @@ backend/database/chats_database/.env
 backend/database/.env
 backend/database/.env
 backend/database/state_database/.env
+
+backend/database/sale_database/.env
