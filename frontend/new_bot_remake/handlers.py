@@ -39,6 +39,7 @@ async def start_messsage(message:Message):
     user_id = message.from_user.id
     await create_deafault_user_data(str(user_id))
     await create_user_state(str(user_id))
+    await cretae_user_sale_table(str(user_id))
     await message.answer("Welcome",reply_markup=kb.main_keyboard)# вставить сюда норм текст
     
 async def transform_date_to_int(date:str) -> int:
@@ -254,6 +255,7 @@ async def succesful_payment_handler(message:Message):
         await message.answer(text = f"✅ Вы купили {invoice[-1]} запросов. Спасибо за покупку. Приятного пользования.")
     elif "subscribtion" in payment.invoice_payload:
         await subscribe(user_id)
+        await change_to_sale(user_id)
         await message.answer("✅ Вы успешно подписались на Premium подписку. Спасибо за покупку. Приятного пользования.")
     elif "basic" in payment.invoice_payload:
         await subscribe_basic(user_id)
