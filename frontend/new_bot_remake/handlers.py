@@ -433,7 +433,7 @@ async def answer_messages(message:Message):
                         await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
                 else:
                     await remove_free_zapros(str(user_id))
-                    response = ask_chat_gpt(str(message.text) + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу")
+                    response = ask_chat_gpt(f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {str(message.text)}")
                     try:
                         await think_message.delete()
                     except Exception as e:
@@ -449,7 +449,7 @@ async def answer_messages(message:Message):
                         await message.answer(text = response)        
                     await write_message(str(user_id),str(message.text),response)
             else:
-                response = ask_chat_gpt(str(message.text) + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу")
+                response = ask_chat_gpt(f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {str(message.text)}")
                 try:
                     await think_message.delete()
                 except Exception as e:
@@ -644,7 +644,7 @@ async def answer_with_photo(message: Message):
             else:
                 full_text: str = str(message.text) + "\n" + (message.caption or "") + "\n" + result_text
                 await remove_free_zapros(str(user_id))
-                response = ask_chat_gpt(str(message.text) + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу")
+                response = ask_chat_gpt(f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {full_text}")
                 try:
                     await think_message.delete()
                 except Exception as e:
@@ -662,7 +662,7 @@ async def answer_with_photo(message: Message):
                
         else:
             full_text: str = str(message.text) + "\n" + (message.caption or "") + "\n" + result_text
-            response = ask_chat_gpt(str(message.text) + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу")
+            response = ask_chat_gpt(f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {full_text}")
             try:
                 await think_message.delete()
             except Exception as e:
@@ -777,7 +777,7 @@ async def answer_with_document(message: Message):
                 else:
                     full_text: str = str(message.text) + "\n" + str(message.caption) + "\n" + text
                     await remove_free_zapros(str(user_id))
-                    response = ask_chat_gpt(str(message.text) + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу")
+                    response = ask_chat_gpt(f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {full_text}")
                     try:
                         await think_message.delete()
                     except Exception as e:
@@ -793,7 +793,7 @@ async def answer_with_document(message: Message):
                     await write_message(str(user_id), str(full_text), response)
             else:
                 full_text = str(message.text) + "\n" + str(message.caption) + "\n" + text
-                response = ask_chat_gpt(str(message.text) + f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу")
+                response = ask_chat_gpt(f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {full_text}")
                 try:
                     await think_message.delete()
                 except Exception as e:
@@ -818,5 +818,5 @@ async def answer_with_document(message: Message):
 
 
 
-# сделать help 
+
 # добавить иконки к кнопкам
