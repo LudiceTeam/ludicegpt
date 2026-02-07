@@ -276,7 +276,7 @@ requests_buy_text = "Данная покупка предоставляет то
 
 @router.message(F.text == "Купить Запросы")
 async def buy_req_handler(message:Message):
-    await message.answer(text = "Выберете то количество запросов, которое хотите купить.")
+    await message.answer(text = "Выберете то количество запросов, которое хотите купить.",reply_markup=kb.buy_req_keyboard)
 
 @router.message(F.text == "5 Запросов")
 async def buy_5_req_handler(message:Message):

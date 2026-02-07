@@ -20,8 +20,8 @@ back_keyboard = ReplyKeyboardMarkup(resize_keyboard=True,keyboard=[
 ])
 
 buy_req_keyboard = ReplyKeyboardMarkup(resize_keyboard=True,keyboard=[
-    [KeyboardButton(text = "5 Запросов"),KeyboardButton(text = "20 Запросов")],
-    [KeyboardButton(text = "10 Запросов"),KeyboardButton(text = "Назад")]
+    [KeyboardButton(text = "5 Запросов"),KeyboardButton(text = "10 Запросов")],
+    [KeyboardButton(text = "20 Запросов"),KeyboardButton(text = "Назад")]
 ])
 
 inline_pay = InlineKeyboardMarkup(inline_keyboard=[
