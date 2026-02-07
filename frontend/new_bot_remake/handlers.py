@@ -339,9 +339,8 @@ async def back(message:Message):
 async def reset(message:Message):
     user_id = str(message.from_user.id)
     await refil_requests_basic_sub(str(user_id))
-    await message.answer(text = "Вы удалите все итсторию переписки,после этого ChatGPT создаст новый чат")
     await delete_all_messages(user_id)
-    await message.answer(text = "✅ История отчищена.Можете продолжать пользоваться")
+    await message.answer(text = "✅ История отчищена.")
 
 @router.message(F.text == "Помощь")
 async def help(message:Message):
