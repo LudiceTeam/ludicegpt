@@ -75,6 +75,9 @@ async def cretae_user_sale_table(username:str):
                 await conn.execute(stmt)
             except Exception as e:
                 raise Exception(f"Error {e}")
+            
+            
+            
 async def change_to_sale(username:str):
     async with AsyncSession(async_engine) as conn:
         async with conn.begin():
