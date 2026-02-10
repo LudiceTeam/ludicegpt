@@ -12,3 +12,4 @@ backend/database/.env
 backend/database/state_database/.env
 
 backend/database/sale_database/.env
+frontend/new_bot_remake/keys.py

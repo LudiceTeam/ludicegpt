@@ -18,7 +18,7 @@ import zipfile
 from docx import Document
 from doc_handler import extract_text_from_docx_with_images
 from backend.database.chats_database.chats_core import write_message,get_all_user_messsages,delete_all_messages
-from backend.api import ask_chat_gpt
+#from backend.api import ask_chat_gpt
 from backend.database.core import create_deafault_user_data,remove_free_zapros,check_free_zapros_amount,get_amount_of_zaproses,subscribe,set_sub_bac_to_false,get_me,is_user_subbed,buy_zaproses,get_sub_date_end,subscribe_basic,unsub_basic,is_user_subbed_basic,get_last_ref_basic,refil_zap,upadate_last_ref_date,is_user_exists,get_user_referal_count,add_referal
 from datetime import timedelta,datetime
 from typing import List
@@ -26,6 +26,8 @@ from backend.database.state_database.state_core import create_user_state,change_
 from backend.database.sale_database.sale_core import cretae_user_sale_table,change_to_sale,does_user_have_sale,give_referal_sub,does_user_have_referal_sub
 import time
 from io import BytesIO 
+import aiohttp
+from openai import AsyncOpenAI
 
 router = Router()
 
@@ -476,6 +478,7 @@ async def support_handler(message:Message):
         
 
 
+    
 
 @router.message(F.text == "Чат")
 async def chat_handler(message:Message):
@@ -497,6 +500,38 @@ async def chat_handler(message:Message):
         
    
     await message.answer("Привет, я твой помощник ChatGPT от LudiceTeam в Telegram") # написать норм тектс для бота  типо просто первое сообщение в чате
+
+from frontend.new_bot_remake.keys import OPEN_AI_KEY
+
+client = AsyncOpenAI(
+    api_key=OPEN_AI_KEY,
+    base_url="https://openrouter.ai/api/v1",
+    timeout=30.0,
+    max_retries=2
+)
+
+async def ask_chat_gpt(request: str) -> str:
+    """Асинхронная версия через официальный SDK"""
+    try:
+        # Ограничиваем длину запроса
+        request = request[:3000]
+        
+        response = await client.responses.create(
+            model="gpt-5-nano", 
+            input=request
+        )
+        
+        result = response.output_text.strip()
+        if not result:
+            return "🤔 GPT вернул пустой ответ."
+        
+        return result[:4000]
+        
+    except Exception as e:
+        print(f"OpenAI SDK error: {e}")
+        return f"❌ Ошибка: {str(e)[:100]}"
+
+
 
 @router.message(F.text & ~F.command)
 async def answer_messages(message:Message):
@@ -535,7 +570,7 @@ async def answer_messages(message:Message):
                         await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
                 else:
                     await remove_free_zapros(str(user_id))
-                    response = ask_chat_gpt(f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {str(message.text)}")
+                    response = await ask_chat_gpt(f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {str(message.text)}")
                     try:
                         await think_message.delete()
                     except Exception as e:
