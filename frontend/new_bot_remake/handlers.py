@@ -136,7 +136,10 @@ async def profile_handler(message:Message):
     await change_user_state(str(user_id),False)
     res_unsub:bool = await unsub_full_func(str(user_id))
     if res_unsub:
-        await message.answer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Вы можете пользоваться ботом в пределе бесплатного тарифа.Благодарим за поддержку")
+        await message.answer( text="📅 Ваша подписка закончилась.\n\n"
+         "🔓 Чтобы продолжить пользоваться платным функционалом, вам нужно оформить её снова.\n\n"
+         "🆓 Вы можете пользоваться ботом в пределах бесплатного тарифа.\n\n"
+         "Благодарим за поддержку!")
     
     free_ref_sub = await  time_to_give_free_referal_sub(str(user_id))
     if free_ref_sub:
@@ -157,7 +160,7 @@ async def profile_handler(message:Message):
     async def get_request_text() -> str:
         
         if user_subbed:
-            return "безлимит"
+            return "∞ (безлимит)"
         elif user_basic_sub:
             user_zaps = await get_amount_of_zaproses(str(user_id))
             return f"{user_zaps}/25"
@@ -481,7 +484,10 @@ async def chat_handler(message:Message):
     await refil_requests_basic_sub(str(user_id))
     res_unsub:bool = await unsub_full_func(str(user_id))
     if res_unsub:
-        await message.asnwer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Вы можете пользоваться ботом в пределе бесплатного тарифа.Благодарим за поддержку")
+        await message.answer( text="📅 Ваша подписка закончилась.\n\n"
+        "🔓 Чтобы продолжить пользоваться платным функционалом, вам нужно оформить её снова.\n\n"
+        "🆓 Вы можете пользоваться ботом в пределах бесплатного тарифа.\n\n"
+        "Благодарим за поддержку!")
     free_ref_sub = await  time_to_give_free_referal_sub(str(user_id))
     if free_ref_sub:
         ref_text = """✅ Basic подписка получена!
@@ -500,7 +506,10 @@ async def answer_messages(message:Message):
             user_id = message.from_user.id
             res_unsub:bool = await unsub_full_func(str(user_id))
             if res_unsub:
-                await message.asnwer(text = "Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Вы можете пользоваться ботом в пределе бесплатного тарифа.Благодарим за поддержку")
+                await message.answer( text="📅 Ваша подписка закончилась.\n\n"
+                "🔓 Чтобы продолжить пользоваться платным функционалом, вам нужно оформить её снова.\n\n"
+                "🆓 Вы можете пользоваться ботом в пределах бесплатного тарифа.\n\n"
+                "Благодарим за поддержку!")
                 
             free_ref_sub = await  time_to_give_free_referal_sub(str(user_id))
             if free_ref_sub:
@@ -685,7 +694,10 @@ async def answer_with_photo(message: Message):
             
         
         if res_unsub:
-            await message.answer(text="Ваша подписка закончилась. Чтобы продолжить пользоваться премиум функционалом вам нужно снова ее оформить. Вы можете пользоваться ботом в пределах бесплатного тарифа. Благодарим за поддержку")
+            await message.answer( text="📅 Ваша подписка закончилась.\n\n"
+         "🔓 Чтобы продолжить пользоваться платным функционалом, вам нужно оформить её снова.\n\n"
+         "🆓 Вы можете пользоваться ботом в пределах бесплатного тарифа.\n\n"
+         "Благодарим за поддержку!")
         
         think_message = await message.answer("Думаю...")
         photo = message.photo[-1]
@@ -811,7 +823,10 @@ async def answer_with_document(message: Message):
         user_id = message.from_user.id
         res_unsub: bool = await unsub_full_func(str(user_id))
         if res_unsub:
-            await message.answer(text="Ваша подписка закончилась.Что бы продолжить пользоваться премиум функционалом вам нужно снова ее оформить.Вы можете пользоваться ботом в пределе бесплатного тарифа.Благодарим за поддержку")
+            await message.answer( text="📅 Ваша подписка закончилась.\n\n"
+         "🔓 Чтобы продолжить пользоваться платным функционалом, вам нужно оформить её снова.\n\n"
+         "🆓 Вы можете пользоваться ботом в пределах бесплатного тарифа.\n\n"
+         "Благодарим за поддержку!")
         think_message = await message.answer("Думаю...")
         
         has_req:bool = await is_user_has_free_req(str(user_id))
