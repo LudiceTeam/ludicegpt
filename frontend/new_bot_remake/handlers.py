@@ -28,8 +28,11 @@ import time
 from io import BytesIO 
 import aiohttp
 from openai import AsyncOpenAI
+import asyncio
+from asyncio import Queue
 
 router = Router()
+gpt_queue = Queue(maxsize=100)
 
 
 reader = easyocr.Reader(["en","ru"],gpu = False) # будут норм сервера поставить True
@@ -477,7 +480,23 @@ async def support_handler(message:Message):
     await message.answer(text =  "Отправьте ваш вопрос вот этому пользователю : @kksndid_support")
         
 
+async def worker():
+    while True:
+        user_id,request,future = gpt_queue.get()
+        
+        try:
+            response = await ask_chat_gpt(request)
+            future.set_result(response)
+            
+        except Exception as e:
+            raise Exception(f"Error : {e}")
+        finally:
+            gpt_queue.task_done()
 
+async def start_worker(count = 10):
+    for i in range(count):
+        asyncio.create_task(worker(),name = f"worker_{i}")
+    print(f"✅ Запущено {count} воркеров")
     
 
 @router.message(F.text == "Чат")
