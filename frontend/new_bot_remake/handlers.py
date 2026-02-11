@@ -482,7 +482,7 @@ async def support_handler(message:Message):
 
 async def worker():
     while True:
-        user_id,request,future = gpt_queue.get()
+        user_id,request,future = await gpt_queue.get()
         
         try:
             response = await ask_chat_gpt(request)
@@ -497,6 +497,16 @@ async def start_worker(count = 10):
     for i in range(count):
         asyncio.create_task(worker(),name = f"worker_{i}")
     print(f"✅ Запущено {count} воркеров")
+
+async def add_to_queue(user_id:str,request:str) -> str:
+    future = asyncio.Future()
+    await gpt_queue.put((user_id, request, future))
+    try:
+        result = await asyncio.wait_for(future,timeout=30)
+        return result
+    except asyncio.TimeoutError:
+        return "⏱️ Превышено время ожидания"
+            
     
 
 @router.message(F.text == "Чат")
@@ -993,7 +1003,6 @@ async def answer_with_document(message: Message):
 
 
 
-
-
-
-# добавить иконки к кнопкам
+@router.startup()
+async def start_up():
+    await start_worker(5)
