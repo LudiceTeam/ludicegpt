@@ -210,7 +210,7 @@ async def profile_handler(message:Message):
          new_profile_desc     
     )
 
-@router.message(F.text == "Реферальная прог")
+@router.message(F.text == "Реферальная программа")
 async def referal_prog(message:Message):
     user_id = str(message.from_user.id)
     user_referal_count = await get_user_referal_count(user_id)
@@ -978,4 +978,3 @@ async def answer_with_document(message: Message):
 
 
 # добавить иконки к кнопкам
-# добавить кеширование
