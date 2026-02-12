@@ -508,15 +508,16 @@ async def add_to_queue(user_id:str,request:str) -> str:
     future = asyncio.Future()
     try:
         await asyncio.wait_for(
-            gpt_queue.put((user_id, request[:2000], future)), 
+            gpt_queue.put((user_id, request[:4000], future)), 
             timeout=5.0
         )
     except asyncio.TimeoutError:
         return "🔄 Очередь переполнена"
     try:
-        result = await asyncio.wait_for(future,timeout=30)
+        result = await asyncio.wait_for(future,timeout=200)
         return result
     except asyncio.TimeoutError:
+        future.cancel()
         return "⏱️ Превышено время ожидания"
             
     
@@ -610,8 +611,8 @@ async def answer_messages(message:Message):
                         await think_message.delete()
                         await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
                 else:
+                    response = await add_to_queue(str(user_id),f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {str(message.text)}")
                     await remove_free_zapros(str(user_id))
-                    response = await ask_chat_gpt(f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {str(message.text)}")
                     try:
                         await think_message.delete()
                     except Exception as e:
@@ -627,7 +628,7 @@ async def answer_messages(message:Message):
                         await message.answer(text = response)        
                     await write_message(str(user_id),str(message.text),response)
             else:
-                response = await ask_chat_gpt(f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {str(message.text)}")
+                response = await add_to_queue(str(user_id),f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {str(message.text)}")
                 try:
                     await think_message.delete()
                 except Exception as e:
@@ -832,8 +833,8 @@ async def answer_with_photo(message: Message):
                     await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
             else:
                 full_text: str = str(message.text) + "\n" + (message.caption or "") + "\n" + result_text
+                response = await add_to_queue(str(user_id),f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {str(message.text)}")
                 await remove_free_zapros(str(user_id))
-                response = await ask_chat_gpt(f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {full_text}")
                 try:
                     await think_message.delete()
                 except Exception as e:
@@ -851,7 +852,7 @@ async def answer_with_photo(message: Message):
                
         else:
             full_text: str = str(message.text) + "\n" + (message.caption or "") + "\n" + result_text
-            response = await ask_chat_gpt(f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {full_text}")
+            response = await add_to_queue(str(user_id),f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {str(message.text)}")
             try:
                 await think_message.delete()
             except Exception as e:
@@ -975,8 +976,8 @@ async def answer_with_document(message: Message):
                         await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль или просто докупить запросы.")
                 else:
                     full_text: str = str(message.text) + "\n" + str(message.caption) + "\n" + text
+                    response = await add_to_queue(str(user_id),f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {str(message.text)}")
                     await remove_free_zapros(str(user_id))
-                    response = await ask_chat_gpt(f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {full_text}")
                     try:
                         await think_message.delete()
                     except Exception as e:
@@ -992,7 +993,7 @@ async def answer_with_document(message: Message):
                     await write_message(str(user_id), str(full_text), response)
             else:
                 full_text = str(message.text) + "\n" + str(message.caption) + "\n" + text
-                response = await ask_chat_gpt(f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {full_text}")
+                response = await add_to_queue(str(user_id),f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {str(message.text)}")
                 try:
                     await think_message.delete()
                 except Exception as e:
