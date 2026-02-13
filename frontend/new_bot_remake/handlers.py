@@ -877,7 +877,7 @@ async def answer_with_photo(message: Message):
                
         else:
             full_text: str = str(message.text) + "\n" + (message.caption or "") + "\n" + result_text
-            response = await add_to_queue(str(user_id),f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {full_text},ты должен отвечать на его текущее сообщение основываясь на его истории")
+            response = await add_to_queue(str(user_id),f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал.Ты отвечаешь кратко и по делу. А вот его текущие сообщение : {full_text}. ,ты должен отвечать на его текущее сообщение основываясь на его истории")
             try:
                 await think_message.delete()
             except Exception as e:

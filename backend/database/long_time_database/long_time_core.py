@@ -70,4 +70,12 @@ async def default_long_time(username:str):
                 )
                 await conn.execute(stmt)
             except Exception as e:
-                raise Exception(f"Error : {e}")     
+                raise Exception(f"Error : {e}") 
+
+async def update_last_time(username:str):
+    async with AsyncSession(async_engine) as conn:
+        async with conn.begin():
+            try:
+                pass
+            except Exception as e:
+                raise Exception(f"Error : {e}")                
