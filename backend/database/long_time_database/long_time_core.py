@@ -42,8 +42,23 @@ async def create_table():
 async def get_all_data():
     async with AsyncSession(async_engine) as conn:
         try:
-            stmt = select(sale_table)
+            stmt = select(main_table)
             res = await conn.execute(stmt)
             return res.fetchall()
         except Exception as e:
             raise Exception(f"Error : {e}")  
+
+async def is_user_exists(username:str)  -> bool:
+    async with AsyncSession(async_engine) as conn:
+        try:
+            stmt = select(main_table.c.username).where(main_table.c.username == username)
+            res = await conn.execute(stmt)
+            data = res.scalar_one_or_none()
+            if data is not None:
+                return data == username
+            return False
+        except Exception as e:
+            raise Exception(f"Error : {e}")      
+
+async def default_long_time(username:str):
+    pass       
