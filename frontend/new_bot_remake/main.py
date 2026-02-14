@@ -19,6 +19,9 @@ async def main():
     dp.include_router(router)
     await dp.start_polling(bot)
 
+async def long_time_no_see():
+    await bot.send_message(text = "test")    
+
 
 if __name__ == "__main__":
     try:

@@ -10,6 +10,8 @@ from backend.database.long_time_database.long_time_models import metadata_obj,ma
 import asyncio
 import atexit
 
+#backend.database.long_time_database.
+
 load_dotenv()
 
 
@@ -61,12 +63,14 @@ async def is_user_exists(username:str)  -> bool:
             raise Exception(f"Error : {e}")      
 
 async def default_long_time(username:str):
+    if await is_user_exists(username):
+        return
     async with AsyncSession(async_engine) as conn:
         async with conn.begin():
             try:
                 stmt = main_table.insert().values(
                     username = username,
-                    last_date = ""
+                    last_date = None
                 )
                 await conn.execute(stmt)
             except Exception as e:
@@ -76,6 +80,25 @@ async def update_last_time(username:str):
     async with AsyncSession(async_engine) as conn:
         async with conn.begin():
             try:
-                pass
+                date_now = datetime.now().date()
+                stmt = main_table.update().where(main_table.c.username == username).values(
+                    last_date = date_now
+                )
+                await conn.execute(stmt)
             except Exception as e:
-                raise Exception(f"Error : {e}")                
+                raise Exception(f"Error : {e}")  
+            
+
+       
+async def all_users_who_needs_to_recieve_message() -> List[str]:
+    async with AsyncSession(async_engine) as conn:
+        try:
+            date_now:int = datetime.now().date() - timedelta(days = 7)
+            stmt = select(main_table.c.username).where(main_table.c.last_date < date_now)
+            res = await conn.execute(stmt)
+            date = res.scalars().all()
+            return date
+        except Exception as e:
+            raise Exception(f"Error : {e}")            
+                       
+asyncio.run(create_table())
