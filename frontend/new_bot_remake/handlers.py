@@ -142,7 +142,7 @@ async def unsub_full_func(username:str) -> bool:
 
 @router.startup()
 async def start_up():
-    await start_worker(5) 
+    await start_worker(50) 
     
 
 @router.message(F.text == "Профиль")
@@ -535,7 +535,7 @@ async def worker():
         finally:
             gpt_queue.task_done()
 
-async def start_worker(count = 5):
+async def start_worker(count = 50):
     for i in range(count):
         asyncio.create_task(worker(),name = f"worker_{i}")
     print(f"✅ Запущено {count} воркеров")
@@ -589,19 +589,19 @@ client = AsyncOpenAI(
 )
 
 async def ask_chat_gpt(request: str) -> str:
-    """Асинхронная версия через официальный SDK"""
     try:
-        # Ограничиваем длину запроса
         request = request[:10000]
         
-        response = await client.responses.create(
-            model="gpt-5-nano", 
-            input=request
+        response = await client.chat.completions.create(  # <-- ВАЖНО: используем chat.completions
+            model="google/gemini-2.0-flash-001",  # <-- ПРАВИЛЬНОЕ имя модели
+            messages=[
+                {"role": "user", "content": request}
+            ]
         )
         
-        result = response.output_text.strip()
+        result = response.choices[0].message.content.strip()
         if not result:
-            return "🤔 GPT вернул пустой ответ."
+            return "🤔 Gemini вернул пустой ответ."
         
         return result[:4000]
         
