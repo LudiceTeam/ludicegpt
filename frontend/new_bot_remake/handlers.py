@@ -34,6 +34,9 @@ from aiogram.fsm.state import State, StatesGroup
 from concurrent.futures import ThreadPoolExecutor
 import re
 import pytesseract
+from concurrent.futures import ThreadPoolExecutor
+from PIL import Image
+import io
 
 router = Router()
 gpt_queue = Queue(maxsize=100)
@@ -679,71 +682,67 @@ async def answer_messages(message:Message):
         else:
             await message.answer(text="❌ Команда не распознана. Чтобы включить режим чата, нажмите кнопку «Чат».")
                     
-class BestFreeOCR:
-    """Твой текущий OCR на EasyOCR"""
+
+class TesseractOCR:
+    """Tesseract для бота с прямым доступом к файлам"""
     
     def __init__(self):
-        # Загружаем модель 1 раз при старте
-        self.reader = easyocr.Reader(['ru', 'en'], gpu=False)
-        self.executor = ThreadPoolExecutor(max_workers=1)
+        self.executor = ThreadPoolExecutor(max_workers=2)
         
-    async def extract_text(self, image_bytes: bytes) -> str:
-        """Асинхронное распознавание"""
+    async def extract_text_from_path(self, image_path: str) -> str:
+        """Распознавание через прямой путь к файлу (ЛУЧШЕЕ КАЧЕСТВО)"""
         loop = asyncio.get_event_loop()
         try:
             text = await loop.run_in_executor(
                 self.executor,
                 self._process_image,
-                image_bytes
+                image_path
             )
             return text
         except Exception as e:
-            print(f"OCR error: {e}")
+            print(f"Tesseract error: {e}")
             return ""
     
-    def _process_image(self, image_bytes: bytes) -> str:
+    def _process_image(self, image_path: str) -> str:
         """Обработка изображения"""
         
-        # Загружаем фото
-        nparr = np.frombuffer(image_bytes, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        # 1. Открываем изображение напрямую (максимальное качество)
+        img = Image.open(image_path)
         
-        if img is None:
-            return ""
+        # 2. Увеличиваем если маленькое
+        if max(img.size) < 1000:
+            scale = 1500 / max(img.size)
+            new_size = (int(img.size[0] * scale), int(img.size[1] * scale))
+            img = img.resize(new_size, Image.Resampling.LANCZOS)
         
-        # 1. Увеличиваем для лучшего распознавания
-        height, width = img.shape[:2]
-        if max(height, width) < 1000:
-            scale = 1500 / max(height, width)
-            img = cv2.resize(img, None, fx=scale, fy=scale)
+        # 3. Конвертируем в оттенки серого
+        img = img.convert('L')
         
-        # 2. Конвертируем в ч/б
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        # 4. Пробуем разные режимы Tesseract
+        texts = []
         
-        # 3. Убираем шум
-        denoised = cv2.fastNlMeansDenoising(gray, h=30)
+        # Режим 6 - обычный текст
+        config1 = r'--oem 3 --psm 6 -l rus'
+        text1 = pytesseract.image_to_string(img, config=config1)
+        texts.append(text1)
         
-        # 4. Усиливаем контраст
-        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
-        enhanced = clahe.apply(denoised)
+        # Режим 4 - переменный размер текста
+        config2 = r'--oem 3 --psm 4 -l rus'
+        text2 = pytesseract.image_to_string(img, config=config2)
+        texts.append(text2)
         
-        # 5. EasyOCR распознает текст
-        results = self.reader.readtext(
-            enhanced,
-            paragraph=True,  # Объединяем в параграфы
-            detail=0,        # Только текст, без координат
-            batch_size=1,    # Быстро
-            contrast_ths=0.3, # Настройки для плохих фото
-            adjust_contrast=0.5
-        )
+        # Режим 12 - вертикальный текст
+        config3 = r'--oem 3 --psm 12 -l rus'
+        text3 = pytesseract.image_to_string(img, config=config3)
+        texts.append(text3)
         
-        # Объединяем результаты
-        text = " ".join(results)
+        # 5. Выбираем лучший результат
+        best_text = max(texts, key=lambda x: len(x.strip()))
         
         # 6. Чистим текст
-        text = self._clean_text(text)
+        best_text = self._clean_text(best_text)
         
-        return text.strip()
+        return best_text.strip()
     
     def _clean_text(self, text: str) -> str:
         """Чистка текста"""
@@ -757,6 +756,10 @@ class BestFreeOCR:
             ' 0 ': ' О ',
             'кмч': 'км/ч',
             'км/ч': 'км/ч',
+            'межд': 'между',
+            'котОрыын': 'которыми',
+            'расстоянне': 'расстояние',
+            'велосппеднстя': 'велосипедиста',
         }
         
         for wrong, correct in fixes.items():
@@ -764,11 +767,7 @@ class BestFreeOCR:
         
         return text
 
-# ============ ИСПОЛЬЗОВАНИЕ В БОТЕ ============
-
-# Создаем глобальный экземпляр
-ocr = BestFreeOCR()
-
+ocr = TesseractOCR()    
 
 async def is_user_has_free_req(username:str) -> bool:
     is_user_subbed_flag:bool = await is_user_subbed(username)
@@ -826,12 +825,17 @@ async def answer_with_photo(message: Message):
         
         photo = message.photo[-1]
         file_info = await message.bot.get_file(photo.file_id)
-        image_bytes = await message.bot.download_file(file_info.file_path)
-        image_bytes = image_bytes.getvalue()
+        
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
+            await message.bot.download_file(file_info.file_path, tmp_file.name)
+            image_path = tmp_file.name
+        
        
       
-        result_text = await ocr.extract_text(image_bytes)
-        
+        result_text = await ocr.extract_text_from_path(image_path)
+    
+        os.unlink(image_path) 
+         
         #await message.answer(text = f"Вот текст с картинки  : {result_text}")
         
         if not result_text:
