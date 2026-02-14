@@ -74,7 +74,7 @@ async def get_all_user_messsages(username:str) -> str:
             stmt = select(chats_table.c.message).where(chats_table.c.username == username)
             res = await conn.execute(stmt)
             data = res.scalars().all()
-            result = data[-5:]
+            result = data
             
             return "\n".join(result)     
         except Exception as e:
