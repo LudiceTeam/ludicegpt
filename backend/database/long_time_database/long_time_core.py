@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 import asyncpg
 import os
 from dotenv import load_dotenv
-from long_time_models import metadata_obj,main_table
+from backend.database.long_time_database.long_time_models import metadata_obj,main_table
 import asyncio
 import atexit
 
@@ -67,16 +67,20 @@ async def default_long_time(username:str):
         return
     async with AsyncSession(async_engine) as conn:
         async with conn.begin():
+            date_now = datetime.now().date()
             try:
                 stmt = main_table.insert().values(
                     username = username,
-                    last_date = None
+                    last_date = date_now
                 )
                 await conn.execute(stmt)
             except Exception as e:
                 raise Exception(f"Error : {e}") 
 
 async def update_last_time(username:str):
+    if not await is_user_exists(username):
+        await default_long_time(username)
+        return
     async with AsyncSession(async_engine) as conn:
         async with conn.begin():
             try:
