@@ -645,6 +645,16 @@ async def answer_messages(message:Message):
             user_messages = await get_all_user_messsages(str(user_id))
             is_user_subbed_ = await is_user_subbed(str(user_id))
             
+            promt = f"""Ты — ассистент, который помогает пользователю, учитывая контекст переписки.
+
+История сообщений пользователя (для понимания стиля и контекста):
+{user_messages}
+
+Текущее сообщение пользователя (на которое нужно ответить):
+{str(message.text)}
+
+Задача: Ответь на текущее сообщение пользователя, опираясь на историю переписки. Сохраняй релевантность и последовательность диалога."""
+            
             if not is_user_subbed_:
                 user_free_req = await get_amount_of_zaproses(str(user_id))
                 user_basic_sub = await is_user_subbed_basic(str(user_id))
@@ -656,7 +666,8 @@ async def answer_messages(message:Message):
                         await think_message.delete()
                         await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
                 else:
-                    response = await add_to_queue(str(user_id),f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал. А вот его текущие сообщение : {str(message.text)},ты должен отвечать на его текущее сообщение основываясь на его истории.Учти что ты пишешь сообщение в Telegramm поэтому если будет код то оформи его правильно.")
+                    
+                    response = await add_to_queue(str(user_id),promt)
                     await remove_free_zapros(str(user_id))
                     try:
                         await think_message.delete()
@@ -673,7 +684,7 @@ async def answer_messages(message:Message):
                         await message.answer(text = response)        
                     await write_message(str(user_id),str(message.text),response)
             else:
-                response = await add_to_queue(str(user_id),f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал. А вот его текущие сообщение : {str(message.text)},ты должен отвечать на его текущее сообщение основываясь на его истории.Учти что ты пишешь сообщение в Telegramm поэтому если будет код то оформи его правильно.")
+                response = await add_to_queue(str(user_id),promt)
                 try:
                     await think_message.delete()
                 except Exception as e:
@@ -852,9 +863,17 @@ async def answer_with_photo(message: Message):
             await message.answer(text="Текст с фотографии не извлечен")
             await think_message.delete()
             return
-        
+        full_text: str = str(message.text) + "\n" + (str(message.caption) or "") + "\n" + result_text
       
-        
+        promt = f"""Ты — ассистент, который помогает пользователю, учитывая контекст переписки.
+
+История сообщений пользователя (для понимания стиля и контекста):
+{user_messages}
+
+Текущее сообщение пользователя (на которое нужно ответить):
+{full_text}
+
+Задача: Ответь на текущее сообщение пользователя, опираясь на историю переписки. Сохраняй релевантность и последовательность диалога."""
         
         is_user_subbed_ = await is_user_subbed(str(user_id))
         
@@ -869,8 +888,8 @@ async def answer_with_photo(message: Message):
                     await think_message.delete()
                     await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
             else:
-                full_text: str = str(message.text) + "\n" + (str(message.caption) or "") + "\n" + result_text
-                response = await add_to_queue(str(user_id),f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал. А вот его текущие сообщение : {full_text},ты должен отвечать на его текущее сообщение основываясь на его истории")
+                
+                response = await add_to_queue(str(user_id),promt)
                 await remove_free_zapros(str(user_id))
                 try:
                     await think_message.delete()
@@ -888,8 +907,8 @@ async def answer_with_photo(message: Message):
                 await write_message(str(user_id), str(full_text), response)
                
         else:
-            full_text: str = str(message.text) + "\n" + (message.caption or "") + "\n" + result_text
-            response = await add_to_queue(str(user_id),f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал. А вот его текущие сообщение : {full_text}. ,ты должен отвечать на его текущее сообщение основываясь на его истории")
+            #full_text: str = str(message.text) + "\n" + (message.caption or "") + "\n" + result_text
+            response = await add_to_queue(str(user_id),promt)
             try:
                 await think_message.delete()
             except Exception as e:
@@ -974,6 +993,19 @@ async def answer_with_document(message: Message):
         
         
         user_messages = await get_all_user_messsages(str(message.from_user.id))
+        full_text: str = str(message.text) + "\n" + str(message.caption) + "\n" + text
+        
+        promt = f"""Ты — ассистент, который помогает пользователю, учитывая контекст переписки.
+
+История сообщений пользователя (для понимания стиля и контекста):
+{user_messages}
+
+Текущее сообщение пользователя (на которое нужно ответить):
+{full_text}
+
+Задача: Ответь на текущее сообщение пользователя, опираясь на историю переписки. Сохраняй релевантность и последовательность диалога."""
+        
+        
         with tempfile.NamedTemporaryFile(delete=False, suffix=Path(filename).suffix) as tmp_fi:
             await message.bot.download_file(file_info.file_path,tmp_fi.name)
             file_path = tmp_fi.name
@@ -1014,8 +1046,7 @@ async def answer_with_document(message: Message):
                         await think_message.delete()
                         await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль или просто докупить запросы.")
                 else:
-                    full_text: str = str(message.text) + "\n" + str(message.caption) + "\n" + text
-                    response = await add_to_queue(str(user_id),f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал. А вот его текущие сообщение : {full_text},ты должен отвечать на его текущее сообщение основываясь на его истории")
+                    response = await add_to_queue(str(user_id),promt)
                     await remove_free_zapros(str(user_id))
                     try:
                         await think_message.delete()
@@ -1031,8 +1062,8 @@ async def answer_with_document(message: Message):
                         await message.answer(text = response)
                     await write_message(str(user_id), str(full_text), response)
             else:
-                full_text = str(message.text) + "\n" + str(message.caption) + "\n" + text
-                response = await add_to_queue(str(user_id),f"Вот все сообщение пользователя что бы тебе было легче его понимать : {user_messages},это его история сообщений что бы ты его понимал. А вот его текущие сообщение : {full_text},ты должен отвечать на его текущее сообщение основываясь на его истории")
+                #full_text = str(message.text) + "\n" + str(message.caption) + "\n" + text
+                response = await add_to_queue(str(user_id),promt)
                 try:
                     await think_message.delete()
                 except Exception as e:

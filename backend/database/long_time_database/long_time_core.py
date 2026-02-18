@@ -77,7 +77,6 @@ async def default_long_time(username:str):
 
 async def update_last_time(username:str):
     if not await is_user_exists(username):
-        await default_long_time(username)
         return
     async with AsyncSession(async_engine) as conn:
         async with conn.begin():
