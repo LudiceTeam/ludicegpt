@@ -77,7 +77,7 @@ async def start_messsage(message:Message):
 
 async def time_to_give_free_referal_sub(username:str) -> bool:
     user_friends_invited:int = await get_user_referal_count(username)
-    if user_friends_invited >= 5:
+    if user_friends_invited >= 5 and not await is_user_subbed(username) and not await is_user_subbed_basic(username):
         recieved_sub = await does_user_have_referal_sub(username)
         if recieved_sub:
             return False
