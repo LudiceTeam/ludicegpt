@@ -59,4 +59,17 @@ async def is_user_exists(username:str)  -> bool:
             data = res.scalar_one_or_none()
             return data is not None 
         except Exception as e:
-            raise Exception(f"Error : {e}")      
+            raise Exception(f"Error : {e}") 
+
+
+async def get_user_model_name(username:str) -> str:
+    if not await is_user_exists(username):
+        return ""
+    async with AsyncSession(async_engine) as conn:
+        try:
+            stmt = select(ai_table.c.ai_name).where(ai_table.c.username == username)
+            res = await conn.execute(stmt)
+            data = res.scalar_one_or_none()
+            return str(data) if data is not None else ""
+        except Exception as e:
+            raise Exception(f"Error : {e}")             
