@@ -601,7 +601,7 @@ async def ask_chat_gpt(request: str) -> str:
         request = request[:10000]
         
         response = await client.chat.completions.create(  # <-- ВАЖНО: используем chat.completions
-            model="google/gemini-2.0-flash-001",  # <-- ПРАВИЛЬНОЕ имя модели
+            model="google/gemini-3-flash-preview",  # <-- ПРАВИЛЬНОЕ имя модели
             messages=[
                 {"role": "user", "content": request}
             ]
@@ -611,7 +611,7 @@ async def ask_chat_gpt(request: str) -> str:
         if not result:
             return "🤔 Gemini вернул пустой ответ."
         
-        return result[:4000]
+        return result
         
     except Exception as e:
         print(f"OpenAI SDK error: {e}")

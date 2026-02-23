@@ -61,6 +61,10 @@ async def is_user_exists(username:str)  -> bool:
         except Exception as e:
             raise Exception(f"Error : {e}") 
 
+async def create_default_user_model_name(username:str):
+    if await is_user_exists(username):
+        return        
+
 
 async def get_user_model_name(username:str) -> str:
     if not await is_user_exists(username):
@@ -73,3 +77,9 @@ async def get_user_model_name(username:str) -> str:
             return str(data) if data is not None else ""
         except Exception as e:
             raise Exception(f"Error : {e}")             
+
+
+
+async def change_user_model_name(username:str):
+    pass        
+        
