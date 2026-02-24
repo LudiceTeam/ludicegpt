@@ -65,7 +65,8 @@ async def start_messsage(message:Message):
                 await buy_zaproses(str(referal_id),5)
                 await add_referal(str(referal_id))
                 await message.answer(text = f"🎉 Вы зашли по ссылке друга!")
-                await message.answer(text = welcome_text,reply_markup=kb.main_keyboard)# вставить сюда норм текст            
+                
+        await message.answer(text = welcome_text,reply_markup=kb.main_keyboard)# вставить сюда норм текст            
                 
     else:
         await message.answer(text = welcome_text,reply_markup=kb.main_keyboard)# вставить сюда норм текст            
