@@ -38,6 +38,8 @@ from concurrent.futures import ThreadPoolExecutor
 from PIL import Image
 import io
 from backend.database.long_time_database.long_time_core import default_long_time,update_last_time
+from backend.database.ai_choose_database.ai_core import get_user_model_name,create_default_user_model_name,change_user_model_name
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 router = Router()
 gpt_queue = Queue(maxsize=100)
@@ -74,6 +76,7 @@ async def start_messsage(message:Message):
     await create_deafault_user_data(str(user_id))
     await create_user_state(str(user_id))
     await cretae_user_sale_table(str(user_id))
+    await create_default_user_model_name(str(user_id))
     
 
 async def time_to_give_free_referal_sub(username:str) -> bool:
@@ -563,6 +566,10 @@ async def add_to_queue(user_id:str,request:str) -> str:
     except asyncio.TimeoutError:
         future.cancel()
         return "⏱️ Превышено время ожидания"
+
+async def get_user_models_keyboard(user_id:str):
+    builder = InlineKeyboardBuilder()
+       
             
 @router.message(F.text == "Выбрать Модель")
 async def choose_model_handler(message:Message):
