@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from backend.database.chats_database.chats_models import metadata_obj,chats_table
 #from chats_models import metadata_obj,chats_table
 import asyncio
+from sqlalchemy import func
 
 load_dotenv()
 
@@ -89,3 +90,11 @@ async def delete_all_messages(username:str):
         except Exception as e:
             return Exception(f"Error : {e}")                    
 
+async def count_all_messages() -> int:
+    async with AsyncSession(async_engine) as conn:
+        try:
+            stmt = select(func.count()).select_from(chats_table)
+            res = await conn.execute(stmt)
+            return res.scalar_one_or_none()
+        except Exception as e:
+            raise Exception(f"Error : {e}")
