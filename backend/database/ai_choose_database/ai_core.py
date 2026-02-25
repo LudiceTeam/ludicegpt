@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 import asyncpg
 import os
 from dotenv import load_dotenv
-from ai_models import metadata_obj,ai_table
+from backend.database.ai_choose_database.ai_models import metadata_obj,ai_table
 import asyncio
 import atexit
 
@@ -102,4 +102,3 @@ async def change_user_model_name(username:str,new_ai_name:str):
                 await conn.execute(stmt)
             except Exception as e:
                 raise Exception(f"Error : {e}")    
-        

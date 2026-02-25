@@ -147,7 +147,7 @@ async def unsub_full_func(username:str) -> bool:
 
 @router.startup()
 async def start_up():
-    await start_worker(50) 
+    await start_worker(5) 
     
 
 @router.message(F.text == "Профиль")
