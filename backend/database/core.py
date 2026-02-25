@@ -85,7 +85,13 @@ async def count_all_users() -> int:
 async def get_all_usernames() -> List[str]:
     async with AsyncSession(async_engine) as conn:
         try:
-            pass
+            stmt = select(table.c.username)
+            res = await conn.execute(stmt)
+            data = res.fetchall()
+            result = []
+            for dt in data:
+                result.append(dt[0])
+            return result
         except Exception as e:
             raise Exception(f"Error : {e}")                  
 
