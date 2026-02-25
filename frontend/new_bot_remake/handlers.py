@@ -223,8 +223,7 @@ async def profile_handler(message:Message):
     """
     if not user_subbed and not await is_user_subbed_basic(str(user_id)):
         await message.answer(
-         new_profile_desc,
-        reply_markup=kb.profile_key_borad        
+         new_profile_desc   
         )
     else:
         await message.answer(
@@ -257,13 +256,13 @@ async def remove_sub_from_user(message:Message,command:CommandObject):
     if user_id == "6184036112":
         args = command.args
         if not args:
-            await message.answer("Укажите ID! Пример: /gsp 12345")
+            await message.answer("Укажите ID! Пример: /rms 12345")
             return
         args_list = args.split()
         user_id_sub = str(args_list[0])
         if await is_user_exists(user_id_sub):
-            await subscribe(user_id_sub)
-            await message.answer(text = "✅ Подписка выдана")
+            await set_sub_bac_to_false(user_id_sub)
+            await message.answer(text = "✅ Подписка отобрана")
             return
         else:
             await message.answer(text = "Пользователь не найден")
@@ -273,7 +272,7 @@ async def remove_sub_from_user(message:Message,command:CommandObject):
 
   
 
-@router.message(F.text == "Реферальная программа")
+@router.message(Command("referal"))
 async def referal_prog(message:Message):
     user_id = str(message.from_user.id)
     user_referal_count = await get_user_referal_count(user_id)
@@ -315,9 +314,10 @@ https://t.me/character_ai_ludice_team_bot?start={user_id}
     
      
 
-@router.message(F.text == "Подписаться")
+@router.message(Command("pay"))
 async def subscribe_hander(message:Message):
-    await message.answer(text = "Выберете тип подписки",reply_markup=kb.subscrition_keyborad)
+    sub_text = "some_text"
+    await message.answer(text = sub_text,reply_markup=kb.subcribtion_key_board)
 
 
 async def count_sale(price:int) -> int:
