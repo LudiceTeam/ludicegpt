@@ -387,12 +387,12 @@ async def basic_sub_handler(callback:CallbackQuery):
 )
     
     
-    
+""" 
 requests_buy_text = "Данная покупка предоставляет только фиксированное количество запросов без каких-либо дополнительных привилегий, гарантий приоритета или влияния на обработку запросов."        
 
-@router.message(F.text == "Купить Запросы")
-async def buy_req_handler(message:Message):
-    await message.answer(text = "Выберете то количество запросов, которое хотите купить.",reply_markup=kb.buy_req_keyboard)
+@router.callback_query(F.data == "buy_requests")
+async def buy_req_handler(callback:CallbackQuery):
+    await callback.answer(text = "Выберете то количество запросов, которое хотите купить.",reply_markup=kb.buy_req_keyboard)
 
 @router.message(F.text == "5 Запросов")
 async def buy_5_req_handler(message:Message):
@@ -463,7 +463,7 @@ async def buy_20_req_handler(message:Message):
     reply_markup=inline_pay
     )
 
-
+"""
  
    
 @router.pre_checkout_query()
@@ -478,10 +478,10 @@ async def succesful_payment_handler(message:Message):
     invoice = payment.invoice_payload.split("_")
     
     
-    if "ludice_team" in payment.invoice_payload:
-        await buy_zaproses(user_id,int(invoice[-1]))
-        await message.answer(text = f"✅ Вы купили {invoice[-1]} запросов. Спасибо за покупку. Приятного пользования.")
-    elif "subscribtion" in payment.invoice_payload:
+    #if "ludice_team" in payment.invoice_payload:
+        #await buy_zaproses(user_id,int(invoice[-1]))
+       # await message.answer(text = f"✅ Вы купили {invoice[-1]} запросов. Спасибо за покупку. Приятного пользования.")
+    if "subscribtion" in payment.invoice_payload:
         await subscribe(user_id)
         await change_to_sale(user_id)
         await message.answer("✅ Вы успешно подписались на Premium подписку. Спасибо за покупку. Приятного пользования.")
@@ -494,13 +494,13 @@ async def succesful_payment_handler(message:Message):
     
      
 
-@router.message(F.text == "Назад")
-async def back(message:Message):
-    await message.answer(text = "Вы вернулись в главное меню",reply_markup=kb.main_keyboard)
+#@router.message(F.text == "Назад")
+#async def back(message:Message):
+ #   await message.answer(text = "Вы вернулись в главное меню",reply_markup=kb.main_keyboard)
 
 
     
-@router.message(F.text == "Сбросить Контекст")
+@router.message(Command("reset"))
 async def reset(message:Message):
     user_id = str(message.from_user.id)
     await refil_requests_basic_sub(str(user_id))
@@ -508,7 +508,7 @@ async def reset(message:Message):
     await update_last_time(str(user_id))
     await message.answer(text = "✅ История отчищена.")
 
-@router.message(F.text == "Помощь")
+@router.message(Command("help"))
 async def help(message:Message):
     help_text = """🎯 Основные разделы (главное меню):
 
@@ -556,7 +556,7 @@ async def help(message:Message):
 
 
 
-@router.message(F.text == "Поддержка")
+@router.message(Command("reset"))
 async def support_handler(message:Message):
     user_id = str(message.from_user.id)
     await update_last_time(str(user_id))
@@ -602,10 +602,11 @@ async def get_user_models_keyboard(user_id:str):
     builder = InlineKeyboardBuilder()
        
             
-@router.message(F.text == "Выбрать Модель")
+@router.message(Command("ai_mode"))
 async def choose_model_handler(message:Message):
     pass
 
+"""
 @router.message(F.text == "Чат")
 async def chat_handler(message:Message):
     user_id = message.from_user.id
@@ -620,13 +621,13 @@ async def chat_handler(message:Message):
         "Благодарим за поддержку!")
     free_ref_sub = await  time_to_give_free_referal_sub(str(user_id))
     if free_ref_sub:
-        ref_text = """✅ Basic подписка получена!
-✅ Награда за 5 приглашённых друзей
-✅ Активна 30 дней"""
+       
         await message.answer(text = ref_text)    
         
    
     await message.answer("Привет, я твой помощник ChatGPT от LudiceTeam в Telegram") # написать норм тектс для бота  типо просто первое сообщение в чате
+"""
+
 
 from frontend.new_bot_remake.keys import OPEN_AI_KEY
 
@@ -662,31 +663,30 @@ async def ask_chat_gpt(request: str) -> str:
 
 @router.message(F.text & ~F.command)
 async def answer_messages(message:Message):
-        user_state = await get_user_state(str(message.from_user.id))
+        #user_state = await get_user_state(str(message.from_user.id))
         await refil_requests_basic_sub(str(message.from_user.id))
-        if user_state:
-            user_id = message.from_user.id
-            await update_last_time(str(user_id))
-            res_unsub:bool = await unsub_full_func(str(user_id))
-            if res_unsub:
-                await message.answer( text="📅 Ваша подписка закончилась.\n\n"
-                "🔓 Чтобы продолжить пользоваться платным функционалом, вам нужно оформить её снова.\n\n"
-                "🆓 Вы можете пользоваться ботом в пределах бесплатного тарифа.\n\n"
-                "Благодарим за поддержку!")
+        user_id = message.from_user.id
+        await update_last_time(str(user_id))
+        res_unsub:bool = await unsub_full_func(str(user_id))
+        if res_unsub:
+            await message.answer( text="📅 Ваша подписка закончилась.\n\n"
+            "🔓 Чтобы продолжить пользоваться платным функционалом, вам нужно оформить её снова.\n\n"
+            "🆓 Вы можете пользоваться ботом в пределах бесплатного тарифа.\n\n"
+            "Благодарим за поддержку!")
+            
+        free_ref_sub = await  time_to_give_free_referal_sub(str(user_id))
+        if free_ref_sub:
+            ref_text = """✅ Basic подписка получена!
+    ✅ Награда за 5 приглашённых друзей
+    ✅ Активна 30 дней"""
+            await message.answer(text = ref_text)    
                 
-            free_ref_sub = await  time_to_give_free_referal_sub(str(user_id))
-            if free_ref_sub:
-                ref_text = """✅ Basic подписка получена!
-        ✅ Награда за 5 приглашённых друзей
-        ✅ Активна 30 дней"""
-                await message.answer(text = ref_text)    
-                    
-            
-            think_message = await message.answer("Думаю...")
-            user_messages = await get_all_user_messsages(str(user_id))
-            is_user_subbed_ = await is_user_subbed(str(user_id))
-            
-            promt = f"""Ты — ассистент, который помогает пользователю, учитывая контекст переписки.
+        
+        think_message = await message.answer("Думаю...")
+        user_messages = await get_all_user_messsages(str(user_id))
+        is_user_subbed_ = await is_user_subbed(str(user_id))
+        
+        promt = f"""Ты — ассистент, который помогает пользователю, учитывая контекст переписки.
 
 История сообщений пользователя (для понимания стиля и контекста):
 {user_messages}
@@ -696,37 +696,21 @@ async def answer_messages(message:Message):
 
 Задача: Ответь на текущее сообщение пользователя, опираясь на историю переписки. Сохраняй релевантность и последовательность диалога.
 Забудь про Markdown, JSON и любой другой синтаксис. Отвечай обычным человеческим текстом, как в переписке. Без звездочек, решеток, кавычек, блоков кода и форматирования. Если нужно записать уравнение или пример — пиши его в строчку обычными символами, например: x2 + 2x - 3 = 0 или 3 * 4 = 12. Главное правило: никаких спецсимволов для оформления, только текст."""
-            
-            if not is_user_subbed_:
-                user_free_req = await get_amount_of_zaproses(str(user_id))
-                user_basic_sub = await is_user_subbed_basic(str(user_id))
-                if user_free_req == 0:
-                    if user_basic_sub:
-                        await think_message.delete()
-                        await message.answer(text = "У вас на сегодня закончились запросы.Попробуйте снова завтра")
-                    else:
-                        await think_message.delete()
-                        await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
+        
+        if not is_user_subbed_:
+            user_free_req = await get_amount_of_zaproses(str(user_id))
+            user_basic_sub = await is_user_subbed_basic(str(user_id))
+            if user_free_req == 0:
+                if user_basic_sub:
+                    await think_message.delete()
+                    await message.answer(text = "У вас на сегодня закончились запросы.Попробуйте снова завтра")
                 else:
-                    
-                    response = await add_to_queue(str(user_id),promt)
-                    await remove_free_zapros(str(user_id))
-                    try:
-                        await think_message.delete()
-                    except Exception as e:
-                        raise Exception(f"Error : {e}")
-                    await asyncio.sleep(0.5)
-                    
-                    
-                    if len(response) > 4096:
-                        for i in range(0,len(response),4096):
-                            part = response[i:i + 4096]
-                            await message.answer(text = part)
-                    else:
-                        await message.answer(text = response)        
-                    await write_message(str(user_id),str(message.text),response)
+                    await think_message.delete()
+                    await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
             else:
+                
                 response = await add_to_queue(str(user_id),promt)
+                await remove_free_zapros(str(user_id))
                 try:
                     await think_message.delete()
                 except Exception as e:
@@ -742,7 +726,22 @@ async def answer_messages(message:Message):
                     await message.answer(text = response)        
                 await write_message(str(user_id),str(message.text),response)
         else:
-            await message.answer(text="❌ Команда не распознана. Чтобы включить режим чата, нажмите кнопку «Чат».")
+            response = await add_to_queue(str(user_id),promt)
+            try:
+                await think_message.delete()
+            except Exception as e:
+                raise Exception(f"Error : {e}")
+            await asyncio.sleep(0.5)
+            
+            
+            if len(response) > 4096:
+                for i in range(0,len(response),4096):
+                    part = response[i:i + 4096]
+                    await message.answer(text = part)
+            else:
+                await message.answer(text = response)        
+            await write_message(str(user_id),str(message.text),response)
+        
                     
 
 class TesseractOCR:
@@ -846,70 +845,69 @@ async def is_user_has_free_req(username:str) -> bool:
             
 @router.message(F.photo)
 async def answer_with_photo(message: Message):
-    user_state = await get_user_state(str(message.from_user.id))
+    #user_state = await get_user_state(str(message.from_user.id))
     await refil_requests_basic_sub(str(message.from_user.id))
-    if user_state:
-        user_id = message.from_user.id
-        await update_last_time(str(user_id))
-        res_unsub: bool = await unsub_full_func(str(user_id))
-        
-        think_message = await message.answer("Думаю...")
-        
-        has_req:bool = await is_user_has_free_req(str(user_id))
-        if has_req:
-            basic_sub = await is_user_subbed_basic(str(user_id))
-            if basic_sub:
-                await think_message.delete()
-                await message.answer(text = "У вас на сегодня закончились запросы.Попробуйте снова завтра")
-                return
-            else:
-                await think_message.delete()
-                await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
-                return
-        
-        free_ref_sub = await  time_to_give_free_referal_sub(str(user_id))
-        if free_ref_sub:
-            ref_text = """✅ Basic подписка получена!
-    ✅ Награда за 5 приглашённых друзей
-    ✅ Активна 30 дней"""
-            await message.answer(text = ref_text)    
-            
-                    
-                
-                 
-            
-        
-        if res_unsub:
-            await message.answer( text="📅 Ваша подписка закончилась.\n\n"
-         "🔓 Чтобы продолжить пользоваться платным функционалом, вам нужно оформить её снова.\n\n"
-         "🆓 Вы можете пользоваться ботом в пределах бесплатного тарифа.\n\n"
-         "Благодарим за поддержку!")
-        
-        
-        user_messages = await get_all_user_messsages(str(user_id))
-        
-        photo = message.photo[-1]
-        file_info = await message.bot.get_file(photo.file_id)
-        
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
-            await message.bot.download_file(file_info.file_path, tmp_file.name)
-            image_path = tmp_file.name
-        
-       
-      
-        result_text = await ocr.extract_text_from_path(image_path)
+    user_id = message.from_user.id
+    await update_last_time(str(user_id))
+    res_unsub: bool = await unsub_full_func(str(user_id))
     
-        os.unlink(image_path) 
-         
-        #await message.answer(text = f"Вот текст с картинки  : {result_text}")
-        
-        if not result_text or result_text == "":
-            await message.answer(text="Текст с фотографии не извлечен")
+    think_message = await message.answer("Думаю...")
+    
+    has_req:bool = await is_user_has_free_req(str(user_id))
+    if has_req:
+        basic_sub = await is_user_subbed_basic(str(user_id))
+        if basic_sub:
             await think_message.delete()
+            await message.answer(text = "У вас на сегодня закончились запросы.Попробуйте снова завтра")
             return
-        full_text: str = str(message.text) + "\n" + (str(message.caption) or "") + "\n" + result_text
-      
-        promt = f"""Ты — ассистент, который помогает пользователю, учитывая контекст переписки.
+        else:
+            await think_message.delete()
+            await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
+            return
+    
+    free_ref_sub = await  time_to_give_free_referal_sub(str(user_id))
+    if free_ref_sub:
+        ref_text = """✅ Basic подписка получена!
+✅ Награда за 5 приглашённых друзей
+✅ Активна 30 дней"""
+        await message.answer(text = ref_text)    
+        
+                
+            
+                
+        
+    
+    if res_unsub:
+        await message.answer( text="📅 Ваша подписка закончилась.\n\n"
+        "🔓 Чтобы продолжить пользоваться платным функционалом, вам нужно оформить её снова.\n\n"
+        "🆓 Вы можете пользоваться ботом в пределах бесплатного тарифа.\n\n"
+        "Благодарим за поддержку!")
+    
+    
+    user_messages = await get_all_user_messsages(str(user_id))
+    
+    photo = message.photo[-1]
+    file_info = await message.bot.get_file(photo.file_id)
+    
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
+        await message.bot.download_file(file_info.file_path, tmp_file.name)
+        image_path = tmp_file.name
+    
+    
+    
+    result_text = await ocr.extract_text_from_path(image_path)
+
+    os.unlink(image_path) 
+        
+    #await message.answer(text = f"Вот текст с картинки  : {result_text}")
+    
+    if not result_text or result_text == "":
+        await message.answer(text="Текст с фотографии не извлечен")
+        await think_message.delete()
+        return
+    full_text: str = str(message.text) + "\n" + (str(message.caption) or "") + "\n" + result_text
+    
+    promt = f"""Ты — ассистент, который помогает пользователю, учитывая контекст переписки.
 
 История сообщений пользователя (для понимания стиля и контекста):
 {user_messages}
@@ -919,57 +917,55 @@ async def answer_with_photo(message: Message):
 
 Задача: Ответь на текущее сообщение пользователя, опираясь на историю переписки. Сохраняй релевантность и последовательность диалога.
 Забудь про Markdown, JSON и любой другой синтаксис. Отвечай обычным человеческим текстом, как в переписке. Без звездочек, решеток, кавычек, блоков кода и форматирования. Если нужно записать уравнение или пример — пиши его в строчку обычными символами, например: x2 + 2x - 3 = 0 или 3 * 4 = 12. Главное правило: никаких спецсимволов для оформления, только текст."""
-        
-        is_user_subbed_ = await is_user_subbed(str(user_id))
-        
-        if not is_user_subbed_:
-            user_free_req = await get_amount_of_zaproses(str(user_id))
-            user_basic_sub = await is_user_subbed_basic(str(user_id))
-            if user_free_req == 0:
-                if user_basic_sub:
-                    await think_message.delete()
-                    await message.answer(text = "У вас на сегодня закончились запросы.Попробуйте снова завтра")
-                else:
-                    await think_message.delete()
-                    await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
+    
+    is_user_subbed_ = await is_user_subbed(str(user_id))
+    
+    if not is_user_subbed_:
+        user_free_req = await get_amount_of_zaproses(str(user_id))
+        user_basic_sub = await is_user_subbed_basic(str(user_id))
+        if user_free_req == 0:
+            if user_basic_sub:
+                await think_message.delete()
+                await message.answer(text = "У вас на сегодня закончились запросы.Попробуйте снова завтра")
             else:
-                
-                response = await add_to_queue(str(user_id),promt)
-                await remove_free_zapros(str(user_id))
-                try:
-                    await think_message.delete()
-                except Exception as e:
-                    raise Exception(f"Error: {e}")
-                await asyncio.sleep(0.5)
-                
-                
-                if len(response) > 4096:
-                    for i in range(0,len(response),4096):
-                        part = response[i:i + 4096]
-                        await message.answer(text = part)
-                else:
-                    await message.answer(text = response)        
-                await write_message(str(user_id), str(full_text), response)
-               
+                await think_message.delete()
+                await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
         else:
-            #full_text: str = str(message.text) + "\n" + (message.caption or "") + "\n" + result_text
+            
             response = await add_to_queue(str(user_id),promt)
+            await remove_free_zapros(str(user_id))
             try:
                 await think_message.delete()
             except Exception as e:
                 raise Exception(f"Error: {e}")
             await asyncio.sleep(0.5)
             
-            if len(response) > 4096:
-                    for i in range(0,len(response),4096):
-                        part = response[i:i + 4096]
-                        await message.answer(text = part)
-            else:
-                await message.answer(text = response)
-            await write_message(str(user_id), str(full_text), response)
-    else:
-        await message.answer(text="❌ Команда не распознана. Чтобы включить режим чата, нажмите кнопку «Чат».")        
             
+            if len(response) > 4096:
+                for i in range(0,len(response),4096):
+                    part = response[i:i + 4096]
+                    await message.answer(text = part)
+            else:
+                await message.answer(text = response)        
+            await write_message(str(user_id), str(full_text), response)
+            
+    else:
+        #full_text: str = str(message.text) + "\n" + (message.caption or "") + "\n" + result_text
+        response = await add_to_queue(str(user_id),promt)
+        try:
+            await think_message.delete()
+        except Exception as e:
+            raise Exception(f"Error: {e}")
+        await asyncio.sleep(0.5)
+        
+        if len(response) > 4096:
+                for i in range(0,len(response),4096):
+                    part = response[i:i + 4096]
+                    await message.answer(text = part)
+        else:
+            await message.answer(text = response)
+        await write_message(str(user_id), str(full_text), response)
+   
             
 
 
@@ -992,94 +988,93 @@ async def read_pdf(path:str) -> str:
 
 @router.message(F.document)
 async def answer_with_document(message: Message):
-    user_state = await get_user_state(str(message.from_user.id))
+    #user_state = await get_user_state(str(message.from_user.id))
     await refil_requests_basic_sub(str(message.from_user.id))
-    if user_state:
-        user_id = message.from_user.id
-        await update_last_time(str(user_id))
-        res_unsub: bool = await unsub_full_func(str(user_id))
-        if res_unsub:
-            await message.answer( text="📅 Ваша подписка закончилась.\n\n"
-         "🔓 Чтобы продолжить пользоваться платным функционалом, вам нужно оформить её снова.\n\n"
-         "🆓 Вы можете пользоваться ботом в пределах бесплатного тарифа.\n\n"
-         "Благодарим за поддержку!")
-        think_message = await message.answer("Думаю...")
-        
-        has_req:bool = await is_user_has_free_req(str(user_id))
-        if has_req:
-            basic_sub = await is_user_subbed_basic(str(user_id))
-            if basic_sub:
-                await think_message.delete()
-                await message.answer(text = "У вас на сегодня закончились запросы.Попробуйте снова завтра")
-                return
-            else:
-                await think_message.delete()
-                await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
-                return
-            
-        free_ref_sub = await  time_to_give_free_referal_sub(str(user_id))
-        if free_ref_sub:
-            ref_text = """✅ Basic подписка получена!
-    ✅ Награда за 5 приглашённых друзей
-    ✅ Активна 30 дней"""
-            await message.answer(text = ref_text)    
-            
-        
-        document = message.document
-        MAX_FILE_SIZE = 20 * 1024 * 1024  # 20MB
+    user_id = message.from_user.id
+    await update_last_time(str(user_id))
+    res_unsub: bool = await unsub_full_func(str(user_id))
+    if res_unsub:
+        await message.answer( text="📅 Ваша подписка закончилась.\n\n"
+        "🔓 Чтобы продолжить пользоваться платным функционалом, вам нужно оформить её снова.\n\n"
+        "🆓 Вы можете пользоваться ботом в пределах бесплатного тарифа.\n\n"
+        "Благодарим за поддержку!")
+    think_message = await message.answer("Думаю...")
     
-        if document.file_size > MAX_FILE_SIZE:
-            await message.answer(
-                f"❌ Файл слишком большой!\n"
-                f"📁 Размер: {document.file_size / 1024 / 1024:.1f}MB\n"
-                f"⚠️ Максимум: 20MB\n"
-                f"💡 Попробуй сжать файл или отправь часть"
-            )
+    has_req:bool = await is_user_has_free_req(str(user_id))
+    if has_req:
+        basic_sub = await is_user_subbed_basic(str(user_id))
+        if basic_sub:
+            await think_message.delete()
+            await message.answer(text = "У вас на сегодня закончились запросы.Попробуйте снова завтра")
+            return
+        else:
+            await think_message.delete()
+            await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
             return
         
-        filename = document.file_name.lower()
+    free_ref_sub = await  time_to_give_free_referal_sub(str(user_id))
+    if free_ref_sub:
+        ref_text = """✅ Basic подписка получена!
+✅ Награда за 5 приглашённых друзей
+✅ Активна 30 дней"""
+        await message.answer(text = ref_text)    
         
-        #file_bytes = await message.bot.download_file(document.file_id)
-        
-        file_info = await message.bot.get_file(document.file_id)
-        
-        
-        with tempfile.NamedTemporaryFile(delete=False, suffix=Path(filename).suffix) as tmp_fi:
-            await message.bot.download_file(file_info.file_path,tmp_fi.name)
-            file_path = tmp_fi.name
-          
-        try:
-              
-            if file_path.endswith(('.jpg', '.jpeg', '.png', '.bmp', '.gif')):
-                text = await ocr.extract_text_from_path(file_path)
-                    
-            elif file_path.endswith('.pdf'):
-                text = await read_pdf(file_path)
-                
-            elif file_path.endswith(('.docx','.doc')):
-                text = await extract_text_from_docx_with_images(file_path)
-                
-            elif file_path.endswith(('.txt','.text')):
-                with open(file_path,"r",encoding='utf-8') as file:
-                    text = file.read()
-            else:
-                await message.answer(text="Формат файла не поддерживается")
-                return
-            
-            if os.path.exists(file_path):
-                os.unlink(file_path)
-            
-            if text == "" or not text or text is None:
-                await message.answer(text="Текст с файла не был извлечен")   
-                return 
-        except Exception as e:
-            print(f"Error : {e}")
     
+    document = message.document
+    MAX_FILE_SIZE = 20 * 1024 * 1024  # 20MB
+
+    if document.file_size > MAX_FILE_SIZE:
+        await message.answer(
+            f"❌ Файл слишком большой!\n"
+            f"📁 Размер: {document.file_size / 1024 / 1024:.1f}MB\n"
+            f"⚠️ Максимум: 20MB\n"
+            f"💡 Попробуй сжать файл или отправь часть"
+        )
+        return
+    
+    filename = document.file_name.lower()
+    
+    #file_bytes = await message.bot.download_file(document.file_id)
+    
+    file_info = await message.bot.get_file(document.file_id)
+    
+    
+    with tempfile.NamedTemporaryFile(delete=False, suffix=Path(filename).suffix) as tmp_fi:
+        await message.bot.download_file(file_info.file_path,tmp_fi.name)
+        file_path = tmp_fi.name
         
-        user_messages = await get_all_user_messsages(str(message.from_user.id))
-        full_text: str = str(message.text) + "\n" + str(message.caption) + "\n" + text
+    try:
+            
+        if file_path.endswith(('.jpg', '.jpeg', '.png', '.bmp', '.gif')):
+            text = await ocr.extract_text_from_path(file_path)
+                
+        elif file_path.endswith('.pdf'):
+            text = await read_pdf(file_path)
+            
+        elif file_path.endswith(('.docx','.doc')):
+            text = await extract_text_from_docx_with_images(file_path)
+            
+        elif file_path.endswith(('.txt','.text')):
+            with open(file_path,"r",encoding='utf-8') as file:
+                text = file.read()
+        else:
+            await message.answer(text="Формат файла не поддерживается")
+            return
         
-        promt = f"""Ты — ассистент, который помогает пользователю, учитывая контекст переписки.
+        if os.path.exists(file_path):
+            os.unlink(file_path)
+        
+        if text == "" or not text or text is None:
+            await message.answer(text="Текст с файла не был извлечен")   
+            return 
+    except Exception as e:
+        print(f"Error : {e}")
+
+    
+    user_messages = await get_all_user_messsages(str(message.from_user.id))
+    full_text: str = str(message.text) + "\n" + str(message.caption) + "\n" + text
+    
+    promt = f"""Ты — ассистент, который помогает пользователю, учитывая контекст переписки.
 
 История сообщений пользователя (для понимания стиля и контекста):
 {user_messages}
@@ -1089,42 +1084,26 @@ async def answer_with_document(message: Message):
 
 Задача: Ответь на текущее сообщение пользователя, опираясь на историю переписки. Сохраняй релевантность и последовательность диалога.
 Забудь про Markdown, JSON и любой другой синтаксис. Отвечай обычным человеческим текстом, как в переписке. Без звездочек, решеток, кавычек, блоков кода и форматирования. Если нужно записать уравнение или пример — пиши его в строчку обычными символами, например: x2 + 2x - 3 = 0 или 3 * 4 = 12. Главное правило: никаких спецсимволов для оформления, только текст."""
-        
-        
     
-        
-        try:
-                
-            is_user_subbed_ = await is_user_subbed(str(user_id))
-            if not is_user_subbed_:
-                user_req = await get_amount_of_zaproses(str(user_id))
-                user_basic_sub = await is_user_subbed_basic(str(user_id))
-                if user_req == 0:
-                    if user_basic_sub:
-                        await think_message.delete()
-                        await message.answer(text = "У вас на сегодня закончились запросы.Попробуйте снова завтра")
-                    else:
-                        await think_message.delete()
-                        await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль или просто докупить запросы.")
+    
+
+    
+    try:
+            
+        is_user_subbed_ = await is_user_subbed(str(user_id))
+        if not is_user_subbed_:
+            user_req = await get_amount_of_zaproses(str(user_id))
+            user_basic_sub = await is_user_subbed_basic(str(user_id))
+            if user_req == 0:
+                if user_basic_sub:
+                    await think_message.delete()
+                    await message.answer(text = "У вас на сегодня закончились запросы.Попробуйте снова завтра")
                 else:
-                    response = await add_to_queue(str(user_id),promt)
-                    await remove_free_zapros(str(user_id))
-                    try:
-                        await think_message.delete()
-                    except Exception as e:
-                        raise Exception(f"Error : {e}")
-                    
-                    await asyncio.sleep(0.5)
-                    if len(response) > 4096:
-                        for i in range(0,len(response),4096):
-                            part = response[i:i + 4096]
-                            await message.answer(text = part)
-                    else:
-                        await message.answer(text = response)
-                    await write_message(str(user_id), str(full_text), response)
+                    await think_message.delete()
+                    await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль или просто докупить запросы.")
             else:
-                #full_text = str(message.text) + "\n" + str(message.caption) + "\n" + text
                 response = await add_to_queue(str(user_id),promt)
+                await remove_free_zapros(str(user_id))
                 try:
                     await think_message.delete()
                 except Exception as e:
@@ -1136,11 +1115,25 @@ async def answer_with_document(message: Message):
                         part = response[i:i + 4096]
                         await message.answer(text = part)
                 else:
-                    await message.answer(text = response)      
+                    await message.answer(text = response)
                 await write_message(str(user_id), str(full_text), response)
-                    
-        except Exception as e:
-            raise Exception(f"Error : {e}")
-    else:
-        await message.answer(text="❌ Команда не распознана. Чтобы включить режим чата, нажмите кнопку «Чат».")    
-
+        else:
+            #full_text = str(message.text) + "\n" + str(message.caption) + "\n" + text
+            response = await add_to_queue(str(user_id),promt)
+            try:
+                await think_message.delete()
+            except Exception as e:
+                raise Exception(f"Error : {e}")
+            
+            await asyncio.sleep(0.5)
+            if len(response) > 4096:
+                for i in range(0,len(response),4096):
+                    part = response[i:i + 4096]
+                    await message.answer(text = part)
+            else:
+                await message.answer(text = response)      
+            await write_message(str(user_id), str(full_text), response)
+                
+    except Exception as e:
+        raise Exception(f"Error : {e}")
+  
