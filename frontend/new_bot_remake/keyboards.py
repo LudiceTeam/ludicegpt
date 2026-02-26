@@ -10,8 +10,8 @@ main_keyboard = ReplyKeyboardMarkup(resize_keyboard=True,keyboard=[
 
 subcribtion_key_board = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text = "Подписаться Premium",callback_data = "subscribe_premium")],
-    [InlineKeyboardButton(text = "Купить Запросы",callback_data = "buy_requests")],
-    [InlineKeyboardButton(text = "Подписаться Basic",callback_data = "subscribe_basic")]
+    [InlineKeyboardButton(text = "Подписаться Basic",callback_data = "subscribe_basic")],
+    [InlineKeyboardButton(text = "Купить Запросы",callback_data = "buy_requests")]
 ])
 
 

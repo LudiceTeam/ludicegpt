@@ -335,10 +335,10 @@ async def count_sale(price:int) -> int:
     sale:int = int(price * 0.1)
     return price - sale
 
-@router.message(F.text == "Premium")
-async def premium_handler(message:Message):
+@router.callback_query(F.data == "subscribe_premium")
+async def premium_handler(callback:CallbackQuery):
     price = 499
-    user_has_sale = await does_user_have_sale(str(message.from_user.id))
+    user_has_sale = await does_user_have_sale(str(callback.from_user.id))
     if user_has_sale:
         price = await count_sale(price)
         
@@ -350,8 +350,8 @@ async def premium_handler(message:Message):
     ])
     
     
-    await message.bot.send_invoice(
-        chat_id=message.from_user.id,
+    await callback.bot.send_invoice(
+        chat_id=callback.from_user.id,
         title="Premium",
         description=buy_sub_text,
         payload="subscribtion",
@@ -362,10 +362,10 @@ async def premium_handler(message:Message):
     )
     
     
-@router.message(F.text == "Basic")
-async def basic_sub_handler(message:Message):
+@router.callback_query(F.data == "subscribe_basic")
+async def basic_sub_handler(callback:CallbackQuery):
     price = 199
-    user_has_sale = await does_user_have_sale(str(message.from_user.id))
+    user_has_sale = await does_user_have_sale(str(callback.from_user.id))
     if user_has_sale:
         price = await count_sale(price)
         
@@ -375,8 +375,8 @@ async def basic_sub_handler(message:Message):
     
     buy_sub_text = f"1) Стоимость: {price} звезд / 30 дней 2) Лимит: 25 запросов в день"
     prices = [LabeledPrice(label=f"{price} ⭐", amount=price)]
-    await message.bot.send_invoice(
-    chat_id=message.from_user.id,
+    await callback.bot.send_invoice(
+    chat_id=callback.from_user.id,
     title="Basic",
     description=buy_sub_text,
     payload="basic",
