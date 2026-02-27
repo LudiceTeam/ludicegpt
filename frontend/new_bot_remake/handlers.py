@@ -387,84 +387,9 @@ async def basic_sub_handler(callback:CallbackQuery):
 )
     
     
-""" 
+
 requests_buy_text = "Данная покупка предоставляет только фиксированное количество запросов без каких-либо дополнительных привилегий, гарантий приоритета или влияния на обработку запросов."        
 
-@router.callback_query(F.data == "buy_requests")
-async def buy_req_handler(callback:CallbackQuery):
-    await callback.answer(text = "Выберете то количество запросов, которое хотите купить.",reply_markup=kb.buy_req_keyboard)
-
-@router.message(F.text == "5 Запросов")
-async def buy_5_req_handler(message:Message):
-    price = 10
-    user_has_sale = await does_user_have_sale(str(message.from_user.id))
-    if user_has_sale:
-        price = await count_sale(price)
-        
-    inline_pay = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text = f"Заплатить {price} ⭐",pay = True)]
-    ])
-    
-    prices = [LabeledPrice(label=f"{price} ⭐", amount=price)]
-    await message.bot.send_invoice(
-    chat_id=message.from_user.id,
-    title="5 Запросов",
-    description=requests_buy_text,
-    payload="ludice_team_5",
-    provider_token="410694247:TEST:48b50af2-4c6d-4c87-8d3f-6912d0d8c38a",
-    prices=prices,
-    currency="XTR",    
-    reply_markup=inline_pay
-    )
-    
-@router.message(F.text == "10 Запросов")
-async def buy_10_req_handler(message:Message):
-    price = 19
-    user_has_sale = await does_user_have_sale(str(message.from_user.id))
-    if user_has_sale:
-        price = await count_sale(price)
-        
-    inline_pay = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text = f"Заплатить {price} ⭐",pay = True)]
-    ])
-    
-    prices = [LabeledPrice(label=f"{price} ⭐", amount=price)]
-    await message.bot.send_invoice(
-    chat_id=message.from_user.id,
-    title="10 Запросов",
-    description=requests_buy_text,
-    payload="ludice_team_10",
-    provider_token="410694247:TEST:48b50af2-4c6d-4c87-8d3f-6912d0d8c38a",
-    prices=prices,
-    currency="XTR",    
-    reply_markup=inline_pay
-    )
-
-@router.message(F.text == "20 Запросов")
-async def buy_20_req_handler(message:Message):
-    price = 37
-    user_has_sale = await does_user_have_sale(str(message.from_user.id))
-    if user_has_sale:
-        price = await count_sale(price)
-        
-    inline_pay = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text = f"Заплатить {price} ⭐",pay = True)]
-    ])
-    
-    prices = [LabeledPrice(label=f"{price} ⭐", amount=price)]
-    await message.bot.send_invoice(
-    chat_id=message.from_user.id,
-    title="20 Запросов",
-    description=requests_buy_text,
-    payload="ludice_team_20",
-    provider_token="410694247:TEST:48b50af2-4c6d-4c87-8d3f-6912d0d8c38a",
-    prices=prices,
-    currency="XTR",    
-    reply_markup=inline_pay
-    )
-
-"""
- 
    
 @router.pre_checkout_query()
 async def pre_checkout_handler(pre_checkout_query: PreCheckoutQuery):
@@ -626,13 +551,37 @@ async def get_user_models_keyboard(user_id:str):
 @router.message(Command("ai_mode"))
 async def choose_model_handler(message:Message):
     user_id = str(message.from_user.id)
+    text = (
+        "🤖 **Выберите AI модель**\n\n"
+        
+        "**Google: Gemini 3 Flash**\n"
+        "⚡ Быстрая модель от Google\n\n"
+        
+        "**Google: Gemini 2.5 Flash**\n"
+        "⚡ Сбалансированная модель от Google\n\n"
+        
+        "**OpenAI: GPT-4**\n"
+        "🤖 Мощная модель от OpenAI\n\n"
+        
+        "**OpenAI: GPT-4 Turbo**\n"
+        "🤖 Ускоренная версия GPT-4\n\n"
+        
+        "**Anthropic: Claude Opus 4.6**\n"
+        "👑 Флагманская модель Claude\n\n"
+        
+        "**Anthropic: Claude Sonnet 4.6**\n"
+        "📝 Стандартная модель Claude\n\n"
+        
+        "**Mistral: Mistral Large**\n"
+        "🌀 Европейская языковая модель\n\n"
+        
+        "**DeepSeek: DeepSeek Chat**\n"
+        "🧠 Китайская языковая модель\n\n"
+        
+    )
     user_keyborad = await get_user_models_keyboard(user_id)
-    await message.answer("🤖 **Выберите AI модель:**\n\n"
-        "• **Gemini** - от Google\n"
-        "• **ChatGPT** - от OpenAI\n"
-        "• **Grok** - от xAI\n"
-        "• **DeepSeek** - от DeepSeek\n\n"
-        "👇 Нажмите на модель для выбора:",
+    await message.answer(
+        text = text,
         reply_markup=user_keyborad,
         parse_mode="Markdown"
         )
@@ -648,28 +597,6 @@ async def ai_change_handler(callback:CallbackQuery):
     await callback.message.edit_reply_markup(
         reply_markup=user_keyboard
     )
-
-"""
-@router.message(F.text == "Чат")
-async def chat_handler(message:Message):
-    user_id = message.from_user.id
-    await change_user_state(str(user_id),True)
-    await refil_requests_basic_sub(str(user_id))
-    await update_last_time(str(user_id))
-    res_unsub:bool = await unsub_full_func(str(user_id))
-    if res_unsub:
-        await message.answer( text="📅 Ваша подписка закончилась.\n\n"
-        "🔓 Чтобы продолжить пользоваться платным функционалом, вам нужно оформить её снова.\n\n"
-        "🆓 Вы можете пользоваться ботом в пределах бесплатного тарифа.\n\n"
-        "Благодарим за поддержку!")
-    free_ref_sub = await  time_to_give_free_referal_sub(str(user_id))
-    if free_ref_sub:
-       
-        await message.answer(text = ref_text)    
-        
-   
-    await message.answer("Привет, я твой помощник ChatGPT от LudiceTeam в Telegram") # написать норм тектс для бота  типо просто первое сообщение в чате
-"""
 
 
 from frontend.new_bot_remake.keys import OPEN_AI_KEY
