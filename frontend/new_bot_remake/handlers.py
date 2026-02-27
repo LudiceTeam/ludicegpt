@@ -625,7 +625,29 @@ async def get_user_models_keyboard(user_id:str):
             
 @router.message(Command("ai_mode"))
 async def choose_model_handler(message:Message):
-    pass
+    user_id = str(message.from_user.id)
+    user_keyborad = await get_user_models_keyboard(user_id)
+    await message.answer("🤖 **Выберите AI модель:**\n\n"
+        "• **Gemini** - от Google\n"
+        "• **ChatGPT** - от OpenAI\n"
+        "• **Grok** - от xAI\n"
+        "• **DeepSeek** - от DeepSeek\n\n"
+        "👇 Нажмите на модель для выбора:",
+        reply_markup=user_keyborad,
+        parse_mode="Markdown"
+        )
+
+
+@router.callback_query(F.data.startswith(("google/", "openai/", "xai/", "deepseek/")))
+async def ai_change_handler(callback:CallbackQuery):
+    user_id = str(callback.from_user.id)
+    await change_user_model_name(user_id,callback.data)
+    
+    user_keyboard = await get_user_models_keyboard(user_id)
+    
+    await callback.message.edit_reply_markup(
+        reply_markup=user_keyboard
+    )
 
 """
 @router.message(F.text == "Чат")
