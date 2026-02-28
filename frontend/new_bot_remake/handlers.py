@@ -604,7 +604,7 @@ from frontend.new_bot_remake.keys import OPEN_AI_KEY
 client = AsyncOpenAI(
     api_key=OPEN_AI_KEY,
     base_url="https://openrouter.ai/api/v1",
-    timeout=30.0,
+    timeout=60.0,
     max_retries=2
 )
 

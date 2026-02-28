@@ -77,6 +77,13 @@ async def minus_one_req(username:str):
                 await conn.execute(stmt)
         except Exception as e:
             raise Exception(f"Error : {e}")
+
+async def get_user_req(username:str) -> int:
+    pass
+
+
+async def refil_user_amount(username:str,amount:int):
+    pass        
         
 
    
