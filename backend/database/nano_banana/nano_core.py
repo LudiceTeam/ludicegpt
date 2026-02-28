@@ -52,23 +52,32 @@ async def is_user_exists(username:str) -> bool:
        return False 
 
 async def create_default_user_data(username:str):
-    if not await is_user_exists(username):
+    if  await is_user_exists(username):
         return
     async with AsyncSession(async_engine) as conn:
         try:
             async with conn.begin():
                 stmt = nano_table.insert().values(
                     username = username,
-                    sub_premium = False,
-                    sub_models = False,
-                    date = None,
                     req = 5
                 )
                 await conn.execute(stmt)
         except Exception as e:
             raise Exception(f"Error : {e}")
 
-
+async def minus_one_req(username:str):
+    if not await is_user_exists(username):
+        return
+    async with AsyncSession(async_engine) as conn:
+        try:
+            async with conn.begin():
+                stmt = nano_table.update().where(nano_table.c.username == username).values(
+                    req = nano_table.c.req - 1
+                )
+                await conn.execute(stmt)
+        except Exception as e:
+            raise Exception(f"Error : {e}")
+        
 
    
    
