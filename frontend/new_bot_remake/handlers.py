@@ -78,7 +78,7 @@ async def start_messsage(message:Message):
     await create_user_state(str(user_id))
     await cretae_user_sale_table(str(user_id))
     await create_default_user_model_name(str(user_id))
-    
+    await create_default_user_data_nano(str(user_id))
 
 async def time_to_give_free_referal_sub(username:str) -> bool:
     user_friends_invited:int = await get_user_referal_count(username)
@@ -819,7 +819,9 @@ async def answer_with_photo(message: Message):
     user_id = message.from_user.id
     await update_last_time(str(user_id))
     res_unsub: bool = await unsub_full_func(str(user_id))
-    
+    user_model = await get_user_model_name()
+    if user_model == "google/gemini-2.5-flash-image-preview:free":
+        await message.answer("Ваш запрос не подходит для данной модели. Измените запрос или выберете другую модель.")
     think_message = await message.answer("Думаю...")
     
     has_req:bool = await is_user_has_free_req(str(user_id))
@@ -967,6 +969,11 @@ async def answer_with_document(message: Message):
         "🔓 Чтобы продолжить пользоваться платным функционалом, вам нужно оформить её снова.\n\n"
         "🆓 Вы можете пользоваться ботом в пределах бесплатного тарифа.\n\n"
         "Благодарим за поддержку!")
+    
+    user_model = await get_user_model_name()
+    if user_model == "google/gemini-2.5-flash-image-preview:free":
+        await message.answer("Ваш запрос не подходит для данной модели. Измените запрос или выберете другую модель.")
+    
     think_message = await message.answer("Думаю...")
     
     has_req:bool = await is_user_has_free_req(str(user_id))
