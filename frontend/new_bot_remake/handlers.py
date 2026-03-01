@@ -327,7 +327,21 @@ https://t.me/character_ai_ludice_team_bot?start={user_id}
 
 @router.message(Command("pay"))
 async def subscribe_hander(message:Message):
-    sub_text = "some_text"
+    sub_text = """Возможности подписок: 
+
+Basic:
+Gemini 3 Flash, 
+Gemini 2.5 Flash, 
+Deepseek, 
+Mistral Large, 
+Claude Opus 4.6, 
+Claude Sonnet 4.6, 
+GPT-4, 
+GPT-4 Turbo - 25 запросов/день
+
+Nano Banana - 5 запросов/день
+
+Premium: безлимитный доступ к любой нейросети, кроме Nano Banana (15 запросов/день)"""
     await message.answer(text = sub_text,reply_markup=kb.subcribtion_key_board)
 
 
@@ -342,7 +356,7 @@ async def premium_handler(callback:CallbackQuery):
     if user_has_sale:
         price = await count_sale(price)
         
-    buy_sub_text = f"1) Стоимость: {price} звезд / 30 дней. 2) Лимит: безлимитные запросы 3) Бонус: любая следующая покупка в боте будет со скидкой 10%"
+    buy_sub_text = f"1) Стоимость: {price} звезд / 30 дней. \n\n Бонус: любая следующая покупка в боте будет со скидкой 10%"
     prices = [LabeledPrice(label=f"{price} ⭐", amount=price)]
     
     inline_pay = InlineKeyboardMarkup(inline_keyboard=[
@@ -373,7 +387,7 @@ async def basic_sub_handler(callback:CallbackQuery):
     [InlineKeyboardButton(text = f"Заплатить {price} ⭐",pay = True)]
     ])
     
-    buy_sub_text = f"1) Стоимость: {price} звезд / 30 дней 2) Лимит: 25 запросов в день"
+    buy_sub_text = f"1) Стоимость: {price} звезд / 30 дней"
     prices = [LabeledPrice(label=f"{price} ⭐", amount=price)]
     await callback.bot.send_invoice(
     chat_id=callback.from_user.id,
