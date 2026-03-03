@@ -106,7 +106,7 @@ async def refil_requests_basic_sub(username:str):
     user_premium_sub_flag = await is_user_subbed(str(username))
     if is_user_subbed_basic_flag:
         await refil_user_amount_nano(str(username),10)
-    elif   user_premium_sub_flag:
+    elif user_premium_sub_flag:
         await refil_user_amount_nano(str(username),15)  
     if is_user_subbed_basic_flag:
         date_now = datetime.now().date()
@@ -754,10 +754,10 @@ async def answer_messages(message:Message):
             if user_free_req == 0:
                 if user_basic_sub:
                     await think_message.delete()
-                    await message.answer(text = "У вас на сегодня закончились запросы.Попробуйте снова завтра")
+                    await message.answer(text = "У вас на сегодня закончились запросы.Попробуйте  завтра")
                 else:
                     await think_message.delete()
-                    await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
+                    await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете по команде /pay")
             else:
                 
                 response = await add_to_queue(str(user_id),promt)
@@ -901,9 +901,10 @@ async def answer_with_photo(message: Message):
     user_id = message.from_user.id
     await update_last_time(str(user_id))
     res_unsub: bool = await unsub_full_func(str(user_id))
-    user_model = await get_user_model_name()
-    if user_model == "google/gemini-2.5-flash-image-preview:free":
-        await message.answer("Ваш запрос не подходит для данной модели. Измените запрос или выберете другую модель.")
+    user_model = await get_user_model_name(str(user_id))
+    if user_model == "google/gemini-3-pro-image-preview":
+        await message.answer("Ваш запрос не подходит для данной модели. Измените запрос или выберите другую модель.")
+        return
     think_message = await message.answer("Думаю...")
     
     has_req:bool = await is_user_has_free_req(str(user_id))
@@ -911,11 +912,11 @@ async def answer_with_photo(message: Message):
         basic_sub = await is_user_subbed_basic(str(user_id))
         if basic_sub:
             await think_message.delete()
-            await message.answer(text = "У вас на сегодня закончились запросы.Попробуйте снова завтра")
+            await message.answer(text = "У вас на сегодня закончились запросы. Попробуйте  завтра")
             return
         else:
             await think_message.delete()
-            await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
+            await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете по команде /pay")
             return
     
     free_ref_sub = await  time_to_give_free_referal_sub(str(user_id))
@@ -979,10 +980,10 @@ async def answer_with_photo(message: Message):
         if user_free_req == 0:
             if user_basic_sub:
                 await think_message.delete()
-                await message.answer(text = "У вас на сегодня закончились запросы.Попробуйте снова завтра")
+                await message.answer(text = "У вас на сегодня закончились запросы.Попробуйте завтра")
             else:
                 await think_message.delete()
-                await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
+                await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете по команде /pay")
         else:
             
             response = await add_to_queue(str(user_id),promt)
@@ -1052,9 +1053,10 @@ async def answer_with_document(message: Message):
         "🆓 Вы можете пользоваться ботом в пределах бесплатного тарифа.\n\n"
         "Благодарим за поддержку!")
     
-    user_model = await get_user_model_name()
-    if user_model == "google/gemini-2.5-flash-image-preview:free":
-        await message.answer("Ваш запрос не подходит для данной модели. Измените запрос или выберете другую модель.")
+    user_model = await get_user_model_name(str(user_id))
+    if user_model == "google/gemini-3-pro-image-preview":
+        await message.answer("Ваш запрос не подходит для данной модели. Измените запрос или выберите другую модель.")
+        return
     
     think_message = await message.answer("Думаю...")
     
@@ -1067,7 +1069,7 @@ async def answer_with_document(message: Message):
             return
         else:
             await think_message.delete()
-            await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль")
+            await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете по команде /pay")
             return
         
     free_ref_sub = await  time_to_give_free_referal_sub(str(user_id))
@@ -1158,7 +1160,7 @@ async def answer_with_document(message: Message):
                     await message.answer(text = "У вас на сегодня закончились запросы.Попробуйте снова завтра")
                 else:
                     await think_message.delete()
-                    await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в профиль или просто докупить запросы.")
+                    await message.answer(text = "У вас не осталось бесплатных запросов.Купить подписку вы можете по команде /pay")
             else:
                 response = await add_to_queue(str(user_id),promt)
                 await remove_free_zapros(str(user_id))
