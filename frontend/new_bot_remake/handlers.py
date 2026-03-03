@@ -104,24 +104,28 @@ async def transform_date_to_int(date:str) -> int:
 async def refil_requests_basic_sub(username:str):
     is_user_subbed_basic_flag = await is_user_subbed_basic(username)
     user_premium_sub_flag = await is_user_subbed(str(username))
-    if is_user_subbed_basic_flag:
-        await refil_user_amount_nano(str(username),10)
-    elif user_premium_sub_flag:
-        await refil_user_amount_nano(str(username),15)  
-    if is_user_subbed_basic_flag:
+    
+    
+    
+    if is_user_subbed_basic_flag or user_premium_sub_flag:
         date_now = datetime.now().date()
         user_last_refil_date = await get_last_ref_basic(username)
-        
-        
+            
+            
         dt_int = await transform_date_to_int(str(date_now))
         last_ref_int = await transform_date_to_int(str(user_last_refil_date))
-        
-        if dt_int > last_ref_int:
-            await refil_zap(username)
-            await upadate_last_ref_date(username)
             
-    else:
-        return
+        if dt_int > last_ref_int:
+            if user_premium_sub_flag:
+                await refil_user_amount_nano(str(username),15)  
+            
+            if is_user_subbed_basic_flag:
+                    await refil_zap(username)
+                    await upadate_last_ref_date(username)
+                    await refil_user_amount_nano(str(username),10)
+                
+        else:
+            return
        
         
 
@@ -751,6 +755,7 @@ async def answer_messages(message:Message):
                 return
             
             response = await add_to_queue(str(user_id),str(message.text))
+            #await think_message.delete()
             if type(response) == str:
                 await message.answer(text = response)
             elif type(response) == bytes:

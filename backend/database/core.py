@@ -167,8 +167,9 @@ async def subscribe(username:str):
     async with AsyncSession(async_engine) as conn:
         try:
             async with conn.begin():
+                date = datetime.now().date()
                 date_exp = datetime.now().date() + timedelta(days=30)
-                stmt = table.update().where(table.c.username == username).values(sub = True,date = str(date_exp))
+                stmt = table.update().where(table.c.username == username).values(sub = True,date = str(date_exp),last_ref = str(date))
                 await conn.execute(stmt)
         except Exception as e:
             raise Exception(f"Error : {e}")
