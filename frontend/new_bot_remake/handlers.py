@@ -53,7 +53,7 @@ os.environ['PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK'] = 'True'
 
 @router.message(CommandStart())
 async def start_messsage(message:Message):
-    welcome_text = """Добро пожаловать в ChatGPT от LudiceTeam!
+    welcome_text = """Добро пожаловать в NEUROHUB от LudiceTeam!
 
 Наш бот помогает быстро и удобно получать ответы на любые вопросы. Вы можете задавать текстовые запросы — и бот предоставит понятные и точные ответы.
 
@@ -718,7 +718,7 @@ async def answer_messages(message:Message):
         await create_user_data_in_nano_database(str(user_id))
         res_unsub:bool = await unsub_full_func(str(user_id))
         if res_unsub:
-            await message.answer( text="📅 Ваша подписка закончилась.\n\n"
+            await message.answer(text="📅 Ваша подписка закончилась.\n\n"
             "🔓 Чтобы продолжить пользоваться платным функционалом, вам нужно оформить её снова.\n\n"
             "🆓 Вы можете пользоваться ботом в пределах бесплатного тарифа.\n\n"
             "Благодарим за поддержку!")
