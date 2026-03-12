@@ -543,11 +543,11 @@ async def start_worker(count = 5):
         asyncio.create_task(worker(),name = f"worker_{i}")
     print(f"✅ Запущено {count} воркеров")
 
-async def add_to_queue(user_id:str,request:str) -> str | bytes:
+async def add_to_queue(user_id:str,request:str | List[str]) -> str | bytes:
     future = asyncio.Future()
     try:
         await asyncio.wait_for(
-            gpt_queue.put((user_id, request[:4000], future)), 
+            gpt_queue.put((user_id, request, future)), 
             timeout=5.0
         )
     except asyncio.TimeoutError:
@@ -649,24 +649,41 @@ client = AsyncOpenAI(
     max_retries=2
 )
 
-async def ask_chat_gpt(request: str,user_id:str) -> str | bytes:
+async def ask_chat_gpt(request: str | List[str],user_id:str) -> str | bytes:
     try:
-        request = request[:10000]
+        req = ""
+        image_base64 = None
+        if type(request) == List[str]:
+            req = request[0]
+            image_base64 = request[1]
+        else:
+            req = request  
         
         user_model = await get_user_model_name(user_id)
         
         if user_model == "google/gemini-3-pro-image-preview":
+            content = [
+                        {
+                            "type": "text",
+                            "text": req
+                        }
+                    ]
+            
+            if image_base64:
+                content.append(
+                    {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_base64}"
+                            }
+                    }
+                )
             response = await client.chat.completions.create(
             model=user_model,
             messages=[
                 {
                     "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": request
-                        }
-                    ]
+                    "content": content
                 }
             ],
             extra_body={
@@ -691,10 +708,11 @@ async def ask_chat_gpt(request: str,user_id:str) -> str | bytes:
                     return image_bytes
             return f"🤔 Нет изображения в ответе."
             
+            
         response = await client.chat.completions.create(  # <-- ВАЖНО: используем chat.completions
             model=user_model,  # <-- ПРАВИЛЬНОЕ имя модели
             messages=[
-                {"role": "user", "content": request}
+                {"role": "user", "content": req}
             ]
         )
         
