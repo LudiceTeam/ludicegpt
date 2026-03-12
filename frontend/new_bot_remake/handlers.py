@@ -1250,4 +1250,9 @@ async def answer_with_document(message: Message):
                 
     except Exception as e:
         raise Exception(f"Error : {e}")
-  
+
+
+
+@router.message(F.voice)
+async def voice_message_handler(message:Message):
+    pass
