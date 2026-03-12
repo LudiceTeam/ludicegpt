@@ -42,6 +42,7 @@ from backend.database.ai_choose_database.ai_core import get_user_model_name,crea
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from backend.database.nano_banana.nano_core import create_default_user_data_nano,minus_one_req_nano,get_user_req_nano,refil_user_amount_nano
 import base64
+import aiofiles
 
 
 router = Router()
@@ -653,7 +654,7 @@ async def ask_chat_gpt(request: str | List[str],user_id:str) -> str | bytes:
     try:
         req = ""
         image_base64 = None
-        if type(request) == List[str]:
+        if isinstance(request, list):
             req = request[0]
             image_base64 = request[1]
         else:
@@ -945,9 +946,6 @@ async def answer_with_photo(message: Message):
     await create_user_data_in_nano_database(str(user_id))
     res_unsub: bool = await unsub_full_func(str(user_id))
     user_model = await get_user_model_name(str(user_id))
-    if user_model == "google/gemini-3-pro-image-preview":
-        await message.answer("Ваш запрос не подходит для данной модели. Измените запрос или выберите другую модель.")
-        return
     think_message = await message.answer("Думаю...")
     
     has_req:bool = await is_user_has_free_req(str(user_id))
@@ -986,10 +984,42 @@ async def answer_with_photo(message: Message):
     photo = message.photo[-1]
     file_info = await message.bot.get_file(photo.file_id)
     
+    
+    
     with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
         await message.bot.download_file(file_info.file_path, tmp_file.name)
         image_path = tmp_file.name
+       
     
+    if user_model == "google/gemini-3-pro-image-preview":
+            user_nano_req = await get_user_req_nano(str(user_id))
+            #user_subbed = await is_user_subbed(str(user_id))
+            if user_nano_req == 0:
+                await message.answer(text = "У вас не осталось запросов к Nano Banana.")
+                return
+            
+            async with aiofiles.open(image_path,"rb") as f:
+                image_bytes = await f.read()
+                
+            base64_image = base64.b64encode(image_bytes).decode("utf-8")
+                
+            os.unlink(image_path) 
+            
+            response = await add_to_queue(str(user_id),[str(message.caption),base64_image])
+            await think_message.delete()
+            if type(response) == str:
+                await message.answer(text = response)
+                return
+            elif type(response) == bytes:
+                await message.answer_photo(
+                    photo=BufferedInputFile(
+                        file=response,
+                        filename="image.png"
+                    ),
+                    caption=f"Промт: {str(message.caption)}"
+                )
+            await minus_one_req_nano(str(user_id))    
+            return
     
     
     result_text = await ocr.extract_text_from_path(image_path)
