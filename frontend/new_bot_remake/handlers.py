@@ -1453,7 +1453,7 @@ async def voice_message_handler(message:Message):
                     await message.answer(text = part)
             else:
                 await message.answer(text = response)        
-            await write_message(str(user_id),str(message.text),response)
+            await write_message(str(user_id),str(voice_text),response)
     else:
         response = await add_to_queue(str(user_id),promt)
         try:
@@ -1469,7 +1469,7 @@ async def voice_message_handler(message:Message):
                 await message.answer(text = part)
         else:
             await message.answer(text = response)        
-        await write_message(str(user_id),str(message.text),response)
+        await write_message(str(user_id),str(voice_text),response)
     
             
 
