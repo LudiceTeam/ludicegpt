@@ -20,66 +20,76 @@ import aiohttp
 import asyncio
 from typing import Optional
 import json
+from jose import jwt,JWTError
+from slowapi import Limiter,_rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+from datetime import timedelta
+from typing import Optional
+import bcrypt
+import base64
 
 
 
 load_dotenv()
 
-async def ask_chat_gpt_async(request: str, session: aiohttp.ClientSession) -> str:
-    url = "https://openrouter.ai/api/v1/responses"
-    headers = {
-        "Authorization": f"Bearer {os.getenv('OPEN_AI')}",
-        "Content-Type": "application/json"
-    }
+
+app = FastAPI()
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(429, _rate_limit_exceeded_handler)
+#app.add_middleware(HTTPSRedirectMiddleware)
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+######## SECURITY ######## 
+
+
+async def verify_signature(data: dict, rec_signature, x_timestamp: str) -> bool:
+   
+    if time.time() - int(x_timestamp) > 300:
+        return False
     
-    payload = {
-        "model": "gpt-5-nano",
-        "input": request
-    }
+   
+    return await asyncio.to_thread(_sync_verify_signature, data, rec_signature)
+
+def _sync_verify_signature(data: dict, rec_signature: str) -> bool:
+   
+    KEY = os.getenv("signature")
+    data_to_verify = data.copy()
+    data_to_verify.pop("signature", None)
+    data_str = json.dumps(data_to_verify, sort_keys=True, separators=(',', ':'))
+    expected = hmac.new(KEY.encode(), data_str.encode(), hashlib.sha256).hexdigest()
+    return hmac.compare_digest(rec_signature, expected)
+
+
+
+async def hash_psw(password: str) -> str:
+    salt = await asyncio.to_thread(bcrypt.gensalt)
     
-    try:
-        async with session.post(url, headers=headers, json=payload, timeout=30) as response:
-            if response.status == 200:
-                data = await response.json()
-                return data.get('output_text', '')
-            else:
-                # Логирование ошибки
-                return f"Ошибка API: {response.status}"
-    except asyncio.TimeoutError:
-        return "Таймаут запроса"
-    except Exception as e:
-        return f"Ошибка: {str(e)}"
-
-
-
-warnings.filterwarnings("ignore", category=RuntimeWarning)
-
-
-original_excepthook = sys.excepthook
-def custom_excepthook(type, value, traceback):
-    if type == RuntimeError and "Event loop is closed" in str(value):
-        return
-    original_excepthook(type, value, traceback)
-
-sys.excepthook = custom_excepthook
-
-
-
-
-
- 
-
-
-client = OpenAI(api_key=os.getenv("OPEN_AI"),base_url="https://openrouter.ai/api/v1")
-
-def ask_chat_gpt(request:str) -> str:
-    response = client.responses.create(
-        model="gpt-5-nano",
-        input=request
+    hashed = await asyncio.to_thread(
+        bcrypt.hashpw,
+        password.encode("utf-8"),
+        salt
     )
 
-    return response.output_text
+    return hashed.decode()
 
+async def safe_get(req: Request):
+    try:
+        api = req.headers.get("X-API-KEY")
+        if not api:
+            raise HTTPException(status_code=401, detail="Invalid API key")
+        
+        if not await asyncio.to_thread(hmac.compare_digest, api, os.getenv("api")):
+            raise HTTPException(status_code=401, detail="Invalid API key")
+            
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Invalid api key")
 
-#print(asyncio.run(ask_chat_gpt_async("привет")))
+######## ROUTES ######## 
 
+@app.get("/")
+async def main():
+    return "NEUROHUB API"
