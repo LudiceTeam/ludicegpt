@@ -93,3 +93,14 @@ async def safe_get(req: Request):
 @app.get("/")
 async def main():
     return "NEUROHUB API"
+
+class Regsiter(BaseModel):
+    username:str
+    password:str 
+
+@limiter.limit("20/minute")
+@app.post("/register")
+async def regsiter(request:Request,req:Regsiter,x_signature:str = Header(...),x_timestamp:str = Header(...)):
+    if not verify_signature(req.model_dump(),x_signature,x_timestamp):
+        raise HTTPException(status_code = status.HTTP_403_FORBIDDEN,detail = "Invalid")
+    
