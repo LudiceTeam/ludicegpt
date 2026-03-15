@@ -36,7 +36,10 @@ from database.state_database.state_core import create_user_state,change_user_sta
 from database.sale_database.sale_core import cretae_user_sale_table,change_to_sale,does_user_have_sale,give_referal_sub,does_user_have_referal_sub
 from database.ai_choose_database.ai_core import get_user_model_name,create_default_user_model_name,change_user_model_name
 from database.nano_banana.nano_core import create_default_user_data_nano,minus_one_req_nano,get_user_req_nano,refil_user_amount_nano
-from backend.database.long_time_database.long_time_core import default_long_time,update_last_time
+from database.long_time_database.long_time_core import default_long_time,update_last_time
+from database.jwt_db.jwt_core import safe_first_refresh_token,update_refresh_token,get_user_refresh_token
+from auth import create_access_token,create_refresh_token
+from datetime import datetime
 
 load_dotenv()
 
@@ -117,6 +120,28 @@ async def default_data_api(request:Request,req:OnlyUsername,x_signature:str = He
         await create_default_user_model_name(str(req.user_id))
         await create_default_user_data_nano(str(req.user_id),5)
 
+        
+        user_date_now = str(datetime.now().date())
+        
+        acces_token:str = create_access_token({
+            "user_id":req.user_id,
+            "date":user_date_now
+        })
+        
+        refresh_token:str = create_refresh_token({
+            "user_id":req.user_id
+        })
+        
+        try_safe = await safe_first_refresh_token(req.user_id,refresh_token)
+        
+        if not try_safe:
+            await update_refresh_token(req.user_id,refresh_token)
+        
+        return {
+            "access_token":acces_token,
+            "refresh_token":refresh_token
+        }    
+        
     except Exception as e:
         raise HTTPException(status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,detail = "Server Error.")
     
