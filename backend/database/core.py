@@ -149,9 +149,9 @@ async def get_all_data():
 
 
 
-async def get_amount_of_zaproses(username:str) -> int:
+async def get_amount_of_zaproses(username:str) -> int | bool:
     if not await is_user_exists(username):
-        return KeyError("User not found")
+        return False
     async with AsyncSession(async_engine) as conn:
         try:
             stmt = select(table.c.zap).where(table.c.username == username)

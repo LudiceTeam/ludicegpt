@@ -126,6 +126,8 @@ def verify_telegram_init_data(init_data: str) -> dict:
 class TelegrammInitData(BaseModel):
     init_data:str
 
+
+#эта функция должна вызываться каждый раз когда пользователь открывает мини приложение
 @limiter.limit("20/minute")
 @app.post("/auth/telegram")
 async def default_data_api(request:Request,req:TelegrammInitData):
@@ -236,6 +238,26 @@ async def remove_request_api(request:Request,user_data:dict = Depends(get_curren
     except Exception as e:
         raise HTTPException(status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,detail = "Server Error.")
     
+
+@limiter.limit("20/minute")
+@app.post("get/amount/requests")
+async def get_amount_of_requests_api(request:Request,user_data:dict = Depends(get_current_user)):
+    try:
+        result = await get_amount_of_zaproses(user_data["user_id"])
+        
+        if type(result) == bool:
+            raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,detail = f"User : {user_data["user_id"]} not found")
+        
+        
+        return {
+            "result":result
+        }
+        
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,detail = "Server Error.")
 
 
 if __name__ == "__main__":
