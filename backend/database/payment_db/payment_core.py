@@ -12,6 +12,7 @@ import atexit
 from sqlalchemy import func
 #backend.database.
 import uuid 
+from typing import Literal
 
 
 load_dotenv()
@@ -57,5 +58,21 @@ async def create_payment(provider_token:str,order_id:str,price:int) -> str:
             )
             await conn.execute(stmt)
             return payment_id
+
+async def get_payment_status(payment_id:str) -> str:
+    async with AsyncSession(async_engine) as conn:
+        stmt = select(table.c.status).where(table.c.payment_id == payment_id)
+        res = await conn.execute(stmt)
+        data = res.scalar_one_or_none()
+        return data
+
+async def change_payment_state(payment_id:str,new_status:str = Literal["succeeded","failed","canceled"]):
+    async with AsyncSession(async_engine) as conn:
+        async with conn.begin():
+            stmt = table.update().where(table.c.payment_id == payment_id).values(
+                status = new_status
+            )
+            await conn.execute(stmt)
+         
 
 
