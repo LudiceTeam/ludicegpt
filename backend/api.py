@@ -10,6 +10,8 @@ import os
 import time
 from dotenv import load_dotenv
 import sys
+import pytesseract
+
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ROOT_DIR)
@@ -373,10 +375,27 @@ async def ask_chat_gpt(request: str | List[str],user_id:str) -> str | bytes:
             return f"🤔 Нет изображения в ответе."
             
             
+
+        content = [
+                        {
+                            "type": "text",
+                            "text": req
+                        }
+                    ]
+        
+        if image_base64:
+            content.append(
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/jpeg;base64,{image_base64}"
+                    }
+                }
+            )
         response = await client.chat.completions.create(  # <-- ВАЖНО: используем chat.completions
             model=user_model,  # <-- ПРАВИЛЬНОЕ имя модели
             messages=[
-                {"role": "user", "content": req}
+                {"role": "user", "content": content}
             ]
         )
         
@@ -398,7 +417,7 @@ class AskAi(BaseModel):
 
 
 @limiter.limit("20/minute")
-@app.post("/ask")
+@app.post("/ask/text")
 async def ask_ai_text(request:Request,
                 req:AskAi,user_data:dict = Depends(get_current_user)):
     try:
@@ -464,7 +483,79 @@ async def ask_ai_text(request:Request,
 
 
 
-    
+
+
+MAX_IMAGE_SIZE = 5 * 1024 * 1024
+
+
+async def is_user_has_free_req(username:str) -> bool:
+    is_user_subbed_flag:bool = await is_user_subbed(username)
+    if not is_user_subbed_flag:
+        #basic_sub = await is_user_subbed_basic(username)
+        user_free_req = await get_amount_of_zaproses(username)
+        if user_free_req == 0:
+            return True
+        return False
+    return False
+
+
+@limiter.limit("20/minute")
+@app.post("/ask/image")
+async def ask_ai_image(request:Request,req:AskAi,user_data:dict = Depends(get_current_user),image:UploadFile = File(...)):
+    try:
+        username = user_data["user_id"]
+        is_user_subbed_flag = await is_user_subbed(username)
+        user_messages = await get_all_user_messsages(username)
+        promt = f"""Ты — ассистент, который помогает пользователю, учитывая контекст переписки.
+
+История сообщений пользователя (для понимания стиля и контекста):
+{user_messages}
+
+Текущее сообщение пользователя (на которое нужно ответить):
+{str(req.request)}
+
+Задача: Ответь на текущее сообщение пользователя, опираясь на историю переписки. Сохраняй релевантность и последовательность диалога.
+"""
+
+
+        user_model = await get_user_model_name(username)
+
+        if image.content_type not in ["image/jpeg", "image/png", "image/webp","image/jpg"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Unsupported file type"
+            )
+        
+        image_bytes = await image.read()
+
+        if len(image_bytes) > MAX_IMAGE_SIZE:
+            raise HTTPException(
+                status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+                detail="Image too large"
+            )
+        
+        image_base_64 = base64.b64encode(image_bytes).decode("utf-8")
+
+        has_req:bool = await is_user_has_free_req(username)
+        if has_req:
+            basic_sub = await is_user_subbed_basic(username)
+            if basic_sub:
+                return "У вас на сегодня закончились запросы. Попробуйте  завтра"
+            else:
+                return "У вас не осталось бесплатных запросов.Купить подписку вы можете перейдя в раздел покупки. "
+
+
+
+
+
+
+
+    except HTTPException:
+        raise 
+    except Exception as e:
+        raise HTTPException(status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,detail = "Server Error.")
+
+
 
 
 if __name__ == "__main__":
