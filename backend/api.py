@@ -11,8 +11,6 @@ import time
 from dotenv import load_dotenv
 import sys
 import pytesseract
-
-
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ROOT_DIR)
 

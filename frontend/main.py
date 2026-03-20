@@ -1,5 +1,4 @@
 import requests
-import telebot
 from dotenv import load_dotenv
 import os
 import json
