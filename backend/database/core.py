@@ -206,6 +206,8 @@ async def is_user_subbed(username:str) -> bool:
 
 
 async def get_sub_date_end(username:str) -> str:
+    if not await is_user_exists(username):
+        return
     async with AsyncSession(async_engine) as conn:
         try:
             stmt = select(table.c.date).where(table.c.username == username)
@@ -256,6 +258,8 @@ async def unsub_basic(username:str):
             
             
 async def is_user_subbed_basic(username:str) -> bool:
+    if not await is_user_exists(username):
+        return
     async with AsyncSession(async_engine) as conn:
         try:
             stmt = select(table.c.basic_sub).where(table.c.username == username)
@@ -268,6 +272,8 @@ async def is_user_subbed_basic(username:str) -> bool:
             raise Exception(f"Error :  {e}")
 
 async def get_last_ref_basic(username:str) -> str:
+    if not await is_user_exists(username):
+        return
     async with AsyncSession(async_engine) as conn:
         try:
             stmt = select(table.c.last_ref).where(table.c.username == username)
@@ -279,6 +285,8 @@ async def get_last_ref_basic(username:str) -> str:
             raise Exception(f"Error : {e}")
         
 async def refil_zap(username:str):
+    if not await is_user_exists(username):
+        return
     if await is_user_subbed_basic(username):
         async with AsyncSession(async_engine) as conn:
             async with conn.begin():
@@ -291,6 +299,8 @@ async def refil_zap(username:str):
                     raise Exception(f"Error : {e}")
         
 async def upadate_last_ref_date(username:str):
+    if not await is_user_exists(username):
+        return
     async with AsyncSession(async_engine) as conn:
         async with conn.begin():
             try:
@@ -305,6 +315,8 @@ async def upadate_last_ref_date(username:str):
             
 
 async def get_me(username:str) -> dict:
+    if not await is_user_exists(username):
+        return
     async with AsyncSession(async_engine) as conn:
         try:
             stmt = select(table).where(table.c.username == username)

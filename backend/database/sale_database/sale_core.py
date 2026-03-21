@@ -79,6 +79,8 @@ async def cretae_user_sale_table(username:str):
             
             
 async def change_to_sale(username:str):
+    if not await is_user_exists(username):
+        return
     async with AsyncSession(async_engine) as conn:
         async with conn.begin():
             try:
@@ -90,6 +92,8 @@ async def change_to_sale(username:str):
                 raise Exception(f"Error : {e}")  
             
 async def does_user_have_sale(username:str) -> bool :
+    if not await is_user_exists(username):
+        return
     async with AsyncSession(async_engine) as conn:
         try:
             stmt = select(sale_table.c.sale).where(sale_table.c.username == username)
@@ -103,6 +107,8 @@ async def does_user_have_sale(username:str) -> bool :
         
         
 async def give_referal_sub(username:str):
+    if not await is_user_exists(username):
+        return
     async with AsyncSession(async_engine) as conn:
         async with conn.begin():
             try:
@@ -114,7 +120,9 @@ async def give_referal_sub(username:str):
                 raise Exception(f"Error : {e}")
 
 async def does_user_have_referal_sub(username:str) -> bool:
-     async with AsyncSession(async_engine) as conn:
+    if not await is_user_exists(username):
+        return
+    async with AsyncSession(async_engine) as conn:
         try:
             stmt = select(sale_table.c.referal_sub).where(sale_table.c.username == username)
             res = await conn.execute(stmt)
