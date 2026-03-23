@@ -15,7 +15,7 @@ from docx import Document
 from doc_handler import extract_text_from_docx_with_images
 from backend.database.chats_database.chats_core import write_message,get_all_user_messsages,delete_all_messages
 #from backend.api import ask_chat_gpt
-from backend.database.core import create_deafault_user_data,remove_free_zapros,check_free_zapros_amount,get_amount_of_zaproses,subscribe,set_sub_bac_to_false,get_me,is_user_subbed,buy_zaproses,get_sub_date_end,subscribe_basic,unsub_basic,is_user_subbed_basic,get_last_ref_basic,refil_zap,upadate_last_ref_date,is_user_exists,get_user_referal_count,add_referal,count_all_users
+from backend.database.core import create_deafault_user_data,remove_free_zapros,check_free_zapros_amount,get_amount_of_zaproses,subscribe,set_sub_bac_to_false,get_me,is_user_subbed,buy_zaproses,get_sub_date_end,subscribe_basic,unsub_basic,is_user_subbed_basic,get_last_ref_basic,refil_zap,upadate_last_ref_date,is_user_exists,get_user_referal_count,add_referal,count_all_users,get_all_usernames
 from datetime import timedelta,datetime
 from typing import List
 from backend.database.state_database.state_core import create_user_state,change_user_state,get_user_state
@@ -898,26 +898,7 @@ class TesseractOCR:
         return best_text.strip()
     
     def _clean_text(self, text: str) -> str:
-        """Чистка текста"""
-        # Убираем лишние пробелы
         text = re.sub(r'\s+', ' ', text)
-        
-        # Исправляем типичные ошибки
-        fixes = {
-            ' 4 ': ' А ',
-            ' B ': ' В ',
-            ' 0 ': ' О ',
-            'кмч': 'км/ч',
-            'км/ч': 'км/ч',
-            'межд': 'между',
-            'котОрыын': 'которыми',
-            'расстоянне': 'расстояние',
-            'велосппеднстя': 'велосипедиста',
-        }
-        
-        for wrong, correct in fixes.items():
-            text = text.replace(wrong, correct)
-        
         return text
 
 ocr = TesseractOCR()    
